@@ -28,7 +28,7 @@ public class Vanet {
     if (!currNode.isEmpty()) {
         int i = 0;
         while (i < currNode.size() -1) {
-            System.out.print(currNode.get(i).toString());
+            System.out.println(currNode.get(i).toString());
             i++;
         }
 

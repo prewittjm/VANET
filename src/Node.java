@@ -152,7 +152,6 @@ public class Node {
     }
 
     public String toString() {
-        return "Node " + this.getNodeID() + " " + getHostname() + ", " + getPortNumber() + " "
-                + getLinks();
+        return "Node " + this.getNodeID() + " " + getHostname() + ", " + getPortNumber() + " " + getxCoordinate() + " " + getyCoordinate();
     }
 }
