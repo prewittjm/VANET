@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -8,7 +7,7 @@ import java.util.*;
  */
 public class ConfigFileReader {
 
-    private String fileName;
+
     private static List<Node> nodeList;
 
     /**
@@ -21,7 +20,7 @@ public class ConfigFileReader {
         File fileIn = new File(filename);
         Scanner fileScan = new Scanner(fileIn);
         Scanner lineScan;
-        String currentLine;
+
         List<String> lines = new ArrayList<String>();
         List<Node> currentNodes = new ArrayList<Node>();
         Map<Integer, List<Integer>> linksForNode = new HashMap<Integer, List<Integer>>();
@@ -57,12 +56,14 @@ public class ConfigFileReader {
             currentNodes.add(newNode);
             linksForNode.put(id, links);
             idForNode.put(id, newNode);
+            lineScan.close();
         }
         for (Node node : currentNodes) {
             for (Integer linkIn : linksForNode.get(node.getNodeID())) {
                 node.addNewLink(idForNode.get(linkIn));
             }
         }
+        fileScan.close();
 
         nodeList = currentNodes;
         return nodeList;

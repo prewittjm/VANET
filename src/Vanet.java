@@ -24,11 +24,12 @@ public class Vanet {
        }
         catch (IOException error) {
         error.getMessage();
-        };
+        }
     if (!currNode.isEmpty()) {
         int i = 0;
         while (i < currNode.size() -1) {
             System.out.print(currNode.get(i).toString());
+            i++;
         }
 
 
