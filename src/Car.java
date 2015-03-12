@@ -1,22 +1,36 @@
 /**
+ * Creates a car from both a set of numbers and from a Node.
  * Created by prewittjm on 3/7/15.
  */
 
-import java.net.*;
+import java.util.ArrayList;
 
 public class Car implements Vehicle {
 
-    private int address, portNumber;
+    private int portNumber, id;
+    private String hostname;
     private double speed, xCoordinate, yCoordinate;
+    private ArrayList<Node> neighbors;
     private double length = 5.0;
     private double width = 3.0;
 
     public Car(int address, int portNumber, double speed, double xCoordinate, double yCoordinate) {
-        this.address = address;
+        this.id = address;
         this.portNumber = portNumber;
         this.speed = speed;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+    }
+    public Car(Node nodeIn) {
+        this.id = nodeIn.getNodeID();
+        this.portNumber = nodeIn.getPortNumber();
+        this.yCoordinate = nodeIn.getyCoordinate();
+        this.xCoordinate = nodeIn.getxCoordinate();
+        this.hostname = nodeIn.getHostname();
+        for (Node node : nodeIn.getLinks()) {
+            neighbors.add(node);
+        }
+
     }
 
 
@@ -61,8 +75,8 @@ public class Car implements Vehicle {
     }
 
     @Override
-    public int getAddress() {
-        return address;
+    public int getId() {
+        return id;
     }
 
     @Override
@@ -71,8 +85,8 @@ public class Car implements Vehicle {
     }
 
     @Override
-    public void setAddress(int address) {
-        this.address = address;
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override
@@ -88,6 +102,16 @@ public class Car implements Vehicle {
     @Override
     public void setWidth(double width) {
         this.width = width;
+    }
+
+    @Override
+    public String getHostname() {
+        return hostname;
+    }
+
+    @Override
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
     }
 
     private class ServerThread extends Thread {
@@ -116,7 +140,7 @@ public class Car implements Vehicle {
     }
 
     public boolean packetForwarding(Packet packet) {
-        if (this.address == packet.getSourceAddress()) {
+        if (this.id == packet.getId()) {
             return false;
         }
         else {

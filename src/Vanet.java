@@ -25,9 +25,23 @@ public class Vanet {
         catch (IOException error) {
         error.getMessage();
         }
+int j = 0;
+
+
+    while(j < currNode.size()) {
+
+        if (currNode.get(j).getNodeID() == 1) {
+            Truck truck = new Truck(currNode.get(j));
+        }
+        else {
+            Car car = new Car(currNode.get(j));
+        }
+
+    }
+        
     if (!currNode.isEmpty()) {
         int i = 0;
-        while (i < currNode.size() -1) {
+        while (i < currNode.size()) {
             System.out.println(currNode.get(i).toString());
             i++;
         }

@@ -1,4 +1,5 @@
 /**
+ * Interface for a vehicle. Car and Truck implement this file.
  * Created by prewittjm on 3/7/15.
  */
 
@@ -58,13 +59,13 @@ public interface Vehicle {
      * Returns the unique address of the vehicle
      * @return int representing the unique address of the vehicle
      */
-    public int getAddress();
+    public int getId();
 
     /**
      * Sets a new unique address for the vehicle
      * @param address - the new address of the vehicle
      */
-    public void setAddress(int address);
+    public void setId(int address);
 
     /**
      * Returns the length of the vehicle
@@ -89,6 +90,18 @@ public interface Vehicle {
      * @param width
      */
     public void setWidth(double width);
+
+    /**
+     * Sets a new hostname for the vehicle
+     * @param hostname - the new hostname for the vehicle
+     */
+    public void setHostname(String hostname);
+
+    /**
+     * Returns a the hostname
+     * @return String representing the hostname
+     */
+    public String getHostname();
 
 
 }

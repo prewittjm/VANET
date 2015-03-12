@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
+ * This class will read the config file into a list. This list contains each node found in the config file.
  * Created by prewittjm on 3/11/15.
  */
 public class ConfigFileReader {

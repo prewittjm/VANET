@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -133,25 +134,33 @@ public class Node {
     public boolean removeLink(Node nodeIn) {
         return links.remove(nodeIn);
     }
-
-    public String getLinks() {
-        String linksString = "";
-        if (links.isEmpty()) {
-            return null;
-        }
-        else {
-            int i = 0;
-            while(i < links.size() -1) {
-                linksString += links.get(0);
-                i++;
-            }
-        return linksString;
-        }
-
-
+    public List<Node> getLinks() {
+        return links;
     }
-
+    /**
+     * Overrides the toString class so a String can be returned
+     * @return String representing the Node
+     */
+    @Override
     public String toString() {
-        return "Node " + this.getNodeID() + " " + getHostname() + ", " + getPortNumber() + " " + getxCoordinate() + " " + getyCoordinate();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Node");
+        sb.append(" ");
+        sb.append(this.nodeID);
+        sb.append(" ");
+        sb.append(this.hostname);
+        sb.append(", ");
+        sb.append(this.portNumber);
+        sb.append(" ");
+        sb.append(this.xCoordinate);
+        sb.append(" ");
+        sb.append(this.yCoordinate);
+        sb.append(" ");
+        sb.append("links");
+        for (Node link : this.links) {
+            sb.append(" ");
+            sb.append(link.getNodeID());
+        }
+        return sb.toString();
     }
 }

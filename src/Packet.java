@@ -8,21 +8,21 @@ import java.io.Serializable;
  * This class will take different parts of the packet and serialize them into bytes that can then be sent over UDP.
  */
 public class Packet implements Serializable {
-    private int sequenceNumber, sourceAddress, previousHop;
+    private int sequenceNumber, id, previousHop;
     private double speed, xCoordinate, yCoordinate;
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
-     * @param sourceAddress - the source address of the packet. Used to know where the packet came from.
+     * @param id - the source id of the packet. Used to know where the packet came from.
      * @param previousHop - the previous node the packet came from. May be the same as source address.
      * @param speed - the current speed of the car sending the packet
      * @param xCoordinate - the current xCoordinate of the car sending the packet
      * @param yCoordinate - the current yCoordinate of the car sending the packet
      */
-    public Packet(int sequenceNumber, int sourceAddress, int previousHop, double speed, double xCoordinate, double yCoordinate) {
+    public Packet(int sequenceNumber, int id, int previousHop, double speed, double xCoordinate, double yCoordinate) {
         this.sequenceNumber = sequenceNumber;
         this.previousHop = previousHop;
-        this.sourceAddress = sourceAddress;
+        this.id = id;
         this.speed = speed;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
@@ -33,7 +33,7 @@ public class Packet implements Serializable {
      * @param packetIn
      */
     public Packet(Packet packetIn) {
-        this.sourceAddress = packetIn.getSourceAddress();
+        this.id = packetIn.getId();
         this.yCoordinate = packetIn.getyCoordinate();
         this.xCoordinate = packetIn.getxCoordinate();
         this.previousHop = packetIn.getPreviousHop();
@@ -56,10 +56,10 @@ public class Packet implements Serializable {
     }
     /**
      * Sets a new value for hte source address
-     * @param sourceAddress - the new value for the source address
+     * @param id - the new value for the source address
      */
-    public void setSourceAddress(int sourceAddress) {
-        this.sourceAddress = sourceAddress;
+    public void setId(int id) {
+        this.id = id;
     }
     /**
      * Sets a new value for the Car's speed
@@ -121,7 +121,7 @@ public class Packet implements Serializable {
      * Returns the source address of the car that sent the packet
      * @return -  int representing the address of where the packet was sent from
      */
-    public int getSourceAddress() {
-        return sourceAddress;
+    public int getId() {
+        return id;
     }
 }
