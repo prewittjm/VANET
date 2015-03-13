@@ -114,30 +114,7 @@ public class Car implements Vehicle {
         this.hostname = hostname;
     }
 
-    private class ServerThread extends Thread {
-        private String name;
 
-        ServerThread(String name){
-            this.name = name;
-        }
-
-        public void run() {
-
-        }
-    }
-
-    private class ClientThread extends Thread {
-        private String name;
-
-        ClientThread(String name) {
-            this.name = name;
-        }
-
-        public void run() {
-
-
-        }
-    }
 
     public boolean packetForwarding(Packet packet) {
         if (this.id == packet.getId()) {

@@ -111,32 +111,6 @@ public class Truck implements Vehicle  {
         return hostname;
     }
 
-    private class ServerThread extends Thread {
-        private String name;
 
-        ServerThread(String name) {
-            this.name = name;
-        }
-
-        public void run() {
-
-        //ENTER SOCKET PROGRAMMING STUFF
-
-        }
-    }
-
-    private class ClientThread extends Thread {
-        private String name;
-
-        ClientThread(String name) {
-            this.name = name;
-        }
-
-        public void run() {
-
-        //ENTER SOCKET PROGRAMMING STUFF
-
-        }
-    }
 }
 

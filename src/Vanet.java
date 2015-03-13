@@ -25,60 +25,37 @@ public class Vanet {
         catch (IOException error) {
         error.getMessage();
         }
-int j = 0;
+//int j = 0;
+
+    CarGUI gui = new CarGUI(currNode);
+
+//    while(j < currNode.size()) {
+//
+//        if (currNode.get(j).getNodeID() == 1) {
+//            Truck truck = new Truck(currNode.get(j));
+//        }
+//        else {
+//            Car car = new Car(currNode.get(j));
+//        }
+//
+//    }
+//
+//    if (!currNode.isEmpty()) {
+//        int i = 0;
+//        while (i < currNode.size()) {
+//            System.out.println(currNode.get(i).toString());
+//            i++;
+//        }
+//
+//
+//    }
 
 
-    while(j < currNode.size()) {
 
-        if (currNode.get(j).getNodeID() == 1) {
-            Truck truck = new Truck(currNode.get(j));
-        }
-        else {
-            Car car = new Car(currNode.get(j));
-        }
 
     }
-        
-    if (!currNode.isEmpty()) {
-        int i = 0;
-        while (i < currNode.size()) {
-            System.out.println(currNode.get(i).toString());
-            i++;
-        }
 
 
-    }
-
-
-
-
-    }
-
-    /**
-     * Determines if the packet can be sent between the two cars based off the distance
-     * @param veh1 - the first car put into the distance formula
-     * @param veh2 - the second car put into the distance formula
-     * @return - returns true if packet can be sent
-     */
-    public static boolean canSend(Vehicle veh1, Vehicle veh2) {
-        double distance;
-        distance = Math.sqrt((veh1.getxCoordinate()-veh2.getxCoordinate())*(veh1.getxCoordinate()-veh2.getxCoordinate())
-                + (veh1.getyCoordinate()-veh2.getyCoordinate())*(veh1.getyCoordinate()-veh2.getyCoordinate()));
-        double prob;
-        prob = (((100-distance)/100)*((100-distance)/100)) * 100;
-        double random = Math.random() * 100;
-        System.out.println(prob);
-        System.out.println(random);
-        if (random < prob) {
-            return true;
-            //Send packet
-            //Add to an integer that keeps track of packets sent
-        }
-        else {
-            return false;
-            //Add to an integer that keeps track of packets lost
-        }
-    }
 
 
 
