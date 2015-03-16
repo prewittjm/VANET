@@ -10,27 +10,30 @@ import java.io.Serializable;
 public class Packet implements Serializable {
     private int sequenceNumber, id, previousHop;
     private double speed, xCoordinate, yCoordinate;
+    private String sourceNode;
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
+     * @param sourceNode - the source hostname of the packet
      * @param id - the source id of the packet. Used to know where the packet came from.
      * @param previousHop - the previous node the packet came from. May be the same as source address.
      * @param speed - the current speed of the car sending the packet
      * @param xCoordinate - the current xCoordinate of the car sending the packet
      * @param yCoordinate - the current yCoordinate of the car sending the packet
      */
-    public Packet(int sequenceNumber, int id, int previousHop, double speed, double xCoordinate, double yCoordinate) {
+    public Packet(int sequenceNumber, String sourceNode, int id, int previousHop, double speed, double xCoordinate, double yCoordinate) {
         this.sequenceNumber = sequenceNumber;
         this.previousHop = previousHop;
         this.id = id;
         this.speed = speed;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+        this.sourceNode = sourceNode;
     }
 
     /**
-     * Constructor that sets the current packet to a packet already
-     * @param packetIn
+     * Constructor that sets the current packet to a packet already created
+     * @param packetIn - packet coming in
      */
     public Packet(Packet packetIn) {
         this.id = packetIn.getId();
@@ -39,6 +42,7 @@ public class Packet implements Serializable {
         this.previousHop = packetIn.getPreviousHop();
         this.sequenceNumber = packetIn.getSequenceNumber();
         this.speed = packetIn.getSpeed();
+        this.sourceNode = packetIn.getSourceNode();
     }
     /**
      * Sets a new value for the previous hop
@@ -123,5 +127,21 @@ public class Packet implements Serializable {
      */
     public int getId() {
         return id;
+    }
+
+    /**
+     * Sets a new source node for the packet
+     * @param sourceNode - the new source node of the packet
+     */
+    public void setSourceNode(String sourceNode) {
+        this.sourceNode = sourceNode;
+    }
+
+    /**
+     * Returns the source node of the packet
+     * @return - String representing the source node of the packet
+     */
+    public String getSourceNode() {
+        return sourceNode;
     }
 }

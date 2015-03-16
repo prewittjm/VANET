@@ -14,12 +14,15 @@ public class Car implements Vehicle {
     private double length = 5.0;
     private double width = 3.0;
 
-    public Car(int address, int portNumber, double speed, double xCoordinate, double yCoordinate) {
+    public Car(int address, int portNumber, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
         this.id = address;
         this.portNumber = portNumber;
         this.speed = speed;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+        for (Node node : neighborsIn) {
+            neighbors.add(node);
+        }
     }
     public Car(Node nodeIn) {
         this.id = nodeIn.getNodeID();
@@ -30,10 +33,7 @@ public class Car implements Vehicle {
         for (Node node : nodeIn.getLinks()) {
             neighbors.add(node);
         }
-
     }
-
-
     @Override
     public void setxCoordinate(double xCoordinate) {
         this.xCoordinate = xCoordinate;
@@ -110,11 +110,19 @@ public class Car implements Vehicle {
     }
 
     @Override
+    public void setNeighbors(ArrayList<Node> neighborsIn) {
+        neighbors = neighborsIn;
+    }
+
+    @Override
+    public ArrayList<Node> getNeighbors() {
+        return neighbors;
+    }
+
+    @Override
     public void setHostname(String hostname) {
         this.hostname = hostname;
     }
-
-
 
     public boolean packetForwarding(Packet packet) {
         if (this.id == packet.getId()) {

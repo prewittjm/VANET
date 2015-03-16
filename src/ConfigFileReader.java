@@ -69,8 +69,5 @@ public class ConfigFileReader {
         nodeList = currentNodes;
         return nodeList;
 
-
     }
-
-
 }

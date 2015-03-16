@@ -1,4 +1,7 @@
+import java.util.Random;
+
 /**
+ * Class that contains many of the calculations needed for this application.
  * Created by prewittjm on 3/12/15.
  */
 public class Calculations {
@@ -64,12 +67,7 @@ public class Calculations {
         double prob;
         prob = (((100-distance)/100)*((100-distance)/100)) * 100;
         double random = Math.random() * 100;
-        if (random < prob) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return random < prob;
     }
 
     /**
@@ -159,12 +157,7 @@ public class Calculations {
                 yIntersect = 1;
             }
         }
-        if (xIntersect == 1 && yIntersect == 1) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return xIntersect == 1 && yIntersect == 1;
     }
 
     /**
@@ -253,6 +246,19 @@ public class Calculations {
         return xIntersect == 1 && yIntersect == 1;
     }
 
-
-
+    /**
+     * Part of the RBA. Takes in the cacheTable from the vehicle and checks if the packet has already been to this node.
+     * If it has a random number is generated and if it is less than the probability of retransmission then
+     * the packet will be forwarded to all other neighbor nodes
+     * @param packet - incoming packet to the node that needs to be put through the algorithm
+     * @param cacheTable - the cache table of the node for checking if the packet has already been sent to this node
+     * @return - true if packet should be retransmitted, false if the packet should be dropped
+     */
+    public static boolean retransmissionRate(Packet packet, CacheTable cacheTable) {
+        String hostname = packet.getSourceNode();
+        int broadcastNumbers = cacheTable.getNumberOfBroadcasts(hostname);
+        double random = Math.random();
+        double rate = Math.pow(.5, broadcastNumbers);
+        return rate == 0 || random < rate;
+    }
 }

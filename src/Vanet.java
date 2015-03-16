@@ -1,4 +1,7 @@
+import javax.swing.*;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +29,75 @@ public class Vanet {
         error.getMessage();
         }
 //int j = 0;
+//        String name = "";
+        InetAddress localAddress = null;
+        try {
+            localAddress = InetAddress.getLocalHost();
+        }
+        catch (UnknownHostException e) {
+            e.getMessage();
+        }
 
-    CarGUI gui = new CarGUI(currNode);
+        String localHostName = localAddress.getHostName();
+        int indexOfPeriod = localHostName.indexOf('.');
+        if (indexOfPeriod > 0) {
+            localHostName = localHostName.substring(0, indexOfPeriod);
+        }
+//        try {
+//           name = InetAddress.getLocalHost().getHostName();
+//        }
+//        catch (UnknownHostException e) {
+//            e.getMessage();
+//        }
+        boolean nodeMade = false;
+        boolean carCreated = false;
+        boolean truckCreated = false;
+        boolean simulationInProgress = true;
+        int currentCount = 0;
+        int nodeInList = 0;
+        for (Node node : currNode) {
+            if (node.getHostname().equals(localHostName)) {
+                if (node.getNodeID() == 0) {
+                    System.out.println("You are a truck.");
+                    nodeMade = true;
+                    truckCreated = true;
+                    nodeInList = currentCount;
+                    //Truck truck = new Truck(node);
+                } else {
+                    System.out.println("You are a car");
+                    nodeMade = true;
+                    carCreated = true;
+                    nodeInList = currentCount;
+                    //Car car = new Car(node);
+                }
+            }
+        currentCount++;
+        }
+        if (!nodeMade) {
+            System.out.println("Hostname not found in node list");
+            System.exit(0);
+        }
+        else if (carCreated) {
+            Node nodeUsing = currNode.get(nodeInList);
+            Car car = new Car(nodeUsing);
+        }
+        else if (truckCreated) {
+            Node nodeUsing = currNode.get(nodeInList);
+            Truck truck = new Truck(nodeUsing);
+        }
+
+        JFrame carGUI = new CarGUI(currNode);
+        while (true) {
+            try {
+                Thread.sleep(1000);
+                carGUI.repaint();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+        //System.out.println(localHostName);
+
 
 //    while(j < currNode.size()) {
 //

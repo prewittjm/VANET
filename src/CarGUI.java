@@ -24,20 +24,15 @@ private List<Node> nList;
 
     public void paint(Graphics graphic) {
         super.paint(graphic);
-
         graphic.setColor(Color.BLACK);
         graphic.fillRect(0, 100, 1000, 100);
-
         graphic.setColor(Color.ORANGE);
         graphic.drawLine(0, 150, 1000, 150);
-
-
         for(Node node : nList){
             int x= (int)node.getxCoordinate()%1000;
             int y = 300/2 - (int)node.getyCoordinate() + 50;
             graphic.setColor(Color.WHITE);
             graphic.drawString(Integer.toString(node.getNodeID()), x, y);
-            graphic.drawString("X: " + node.getxCoordinate() + " " + "Y: " + node.getyCoordinate(), x - 40, y + 15);
             if(node.getNodeID() != 1){
                 graphic.setColor(Color.RED);
                 graphic.fillRect(x, y, 5, 3);
@@ -51,8 +46,6 @@ private List<Node> nList;
                 graphic.setColor(Color.CYAN);
                 graphic.drawLine(x, y, neighborX, neighborY);
             }
-
         }
-
     }
 }

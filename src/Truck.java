@@ -11,12 +11,15 @@ public class Truck implements Vehicle  {
     private double width = 3.0;
     private ArrayList<Node> neighbors;
 
-    public Truck(int id, int portNumber, double speed, double xCoordinate, double yCoordinate) {
+    public Truck(int id, int portNumber, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
         this.id = id;
         this.portNumber = portNumber;
         this.speed = speed;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+        for (Node node: neighborsIn) {
+            neighbors.add(node);
+        }
     }
 
     public Truck(Node nodeIn) {
@@ -111,6 +114,14 @@ public class Truck implements Vehicle  {
         return hostname;
     }
 
+    @Override
+    public void setNeighbors(ArrayList<Node> neighbors) {
+        this.neighbors = neighbors;
+    }
 
+    @Override
+    public ArrayList<Node> getNeighbors() {
+        return neighbors;
+    }
 }
 

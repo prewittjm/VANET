@@ -3,6 +3,8 @@
  * Created by prewittjm on 3/7/15.
  */
 
+import java.util.ArrayList;
+
 /**
  * Interface that can be used to create a vehicle either a car or truck
  */
@@ -102,6 +104,18 @@ public interface Vehicle {
      * @return String representing the hostname
      */
     public String getHostname();
+
+    /**
+     * Returns ArrayList of neighbors
+     * @return - ArrayList of nodes representing the neighbors
+     */
+    public ArrayList<Node> getNeighbors();
+
+    /**
+     * Sets a new list of neighbors
+     * @param neighborsIn - the new ArrayList of neighbor nodes
+     */
+    public void setNeighbors(ArrayList<Node> neighborsIn);
 
 
 }
