@@ -1,16 +1,14 @@
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.io.ByteArrayInputStream;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * Creates a truck either from a set of data or an existing node
  * Created by prewittjm on 3/7/15.
  */
 public class Truck implements Vehicle, PacketAcknowledgement  {
@@ -24,14 +22,24 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     private ExecutorService myExecutor;
     private int sequenceNumber;
 
-
-    public Truck(int id, int portNumber, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
+    /**
+     * Creates a truck from a given set of data
+     * @param id - the id of the truck
+     * @param portNumber - the port number of the truck
+     * @param speed - the speed of the truck
+     * @param xCoordinate - the x coordinate of the truck
+     * @param yCoordinate - the y coordinate of the truck
+     * @param neighborsIn - the neighboring nodes of the truck
+     * @param hostname - the hostname of the truck
+     */
+    public Truck(int id, int portNumber, String hostname, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
         this.id = id;
         this.portNumber = portNumber;
         this.speed = speed;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.neighbors = neighborsIn;
+        this.hostname = hostname;
 //        for (Node node: neighborsIn) {
 //            neighbors.add(node);
 //        }
@@ -40,6 +48,10 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         sequenceNumber = 0;
     }
 
+    /**
+     * Creates a truck from a given node
+     * @param nodeIn - node which will turn into a truck
+     */
     public Truck(Node nodeIn) {
         this.id = nodeIn.getNodeID();
         this.xCoordinate = nodeIn.getxCoordinate();
@@ -146,11 +158,21 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         return neighbors;
     }
 
+    /**
+     * Increases the sequence number of the packet each time a new packet is sent
+     * @return - the new value of the sequence number
+     */
     public int increaseSequenceNumber(){
         sequenceNumber++;
         return sequenceNumber;
     }
 
+    /**
+     * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
+     * received by the server. Will take the packet and determine if should be retransmitted based on
+     * the RBA algorithm.
+     * @param packetIn - the packet received by the server
+     */
     @Override
     public void receivePacket(DatagramPacket packetIn) {
         ByteArrayInputStream in = new ByteArrayInputStream(packetIn.getData());
@@ -170,8 +192,6 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         catch (IOException e) {
             e.getMessage();
         }
-
-
         int sequenceNum = myPacket.getSequenceNumber();
         int nodeID = this.getId();
         int sourceNodeID = myPacket.getId();
@@ -193,6 +213,11 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         }
     }
 
+    /**
+     * Takes a packet and sends it to each neighbor in the neighboring nodes list. Only sends if the packet is not determined
+     * to be lost using the calculation.
+     * @param aPacket - packet being forwarded to all the nodes
+     */
     public void sendToNeighboringVehicles(Packet aPacket) {
         for (Node nVehicle : getNeighbors()){
             cacheTable.increaseNumberOfBroadcasts(Integer.toString(nVehicle.getNodeID()));
@@ -211,6 +236,9 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         }
     }
 
+    /**
+     * This thread constantly sends packets to each neighbor in the neighboring nodes list.
+     */
     public class Broadcaster extends Thread {
 
         @Override

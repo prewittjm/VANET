@@ -23,10 +23,21 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private ExecutorService myExecutor;
     private int sequenceNumber;
 
-    public Car(int address, int portNumber, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
+    /**
+     * Creates a car from different parameters
+     * @param address - The id of the node
+     * @param portNumber - the portnumber used for this node
+     * @param speed - the speed the car travels
+     * @param xCoordinate - the x coordinate of the car
+     * @param yCoordinate - the y coordinate of the car
+     * @param neighborsIn - the neighboring nodes of the car
+     * @param hostname - the hostname this car uses to run the program on
+     */
+    public Car(int address, int portNumber, String hostname, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
         this.id = address;
         this.portNumber = portNumber;
         this.speed = speed;
+        this.hostname = hostname;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
 //        for (Node node : neighborsIn) {
@@ -37,6 +48,11 @@ public class Car implements Vehicle, PacketAcknowledgement {
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = neighborsIn;
     }
+
+    /**
+     * Creates a car using a node as input
+     * @param nodeIn - the node where the car data comes from
+     */
     public Car(Node nodeIn) {
         this.id = nodeIn.getNodeID();
         this.portNumber = nodeIn.getPortNumber();
@@ -141,15 +157,25 @@ public class Car implements Vehicle, PacketAcknowledgement {
         this.hostname = hostname;
     }
 
+    /**
+     * Increases the sequence number of the packet each time a new packet is sent
+     * @return - the new value of the sequence number
+     */
     public int increaseSequenceNumber(){
         sequenceNumber++;
         return sequenceNumber;
     }
 
+    /**
+     * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
+     * received by the server. Will take the packet and determine if should be retransmitted based on
+     * the RBA algorithm.
+     * @param packetIn - the packet received by the server
+     */
     @Override
     public void receivePacket(DatagramPacket packetIn) {
         ByteArrayInputStream in = new ByteArrayInputStream(packetIn.getData());
-        ObjectInputStream inputStream = null;
+        ObjectInputStream inputStream;
         Packet myPacket = null;
         try {
             inputStream = new ObjectInputStream(in);
@@ -186,7 +212,11 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
         }
     }
-
+    /**
+     * Takes a packet and sends it to each neighbor in the neighboring nodes list. Only sends if the packet is not determined
+     * to be lost using the calculation.
+     * @param aPacket - packet being forwarded to all the nodes
+     */
     public void sendToNeighboringVehicles(Packet aPacket) {
         for (Node nVehicle : getNeighbors()){
             cacheTable.increaseNumberOfBroadcasts(Integer.toString(nVehicle.getNodeID()));
@@ -205,6 +235,9 @@ public class Car implements Vehicle, PacketAcknowledgement {
         }
     }
 
+    /**
+     * This thread constantly sends packets to the neighboring nodes
+     */
     public class Broadcaster extends Thread {
         @Override
         public void run() {
