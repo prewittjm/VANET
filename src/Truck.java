@@ -171,6 +171,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
             e.getMessage();
         }
 
+
         int sequenceNum = myPacket.getSequenceNumber();
         int nodeID = this.getId();
         int sourceNodeID = myPacket.getId();
@@ -186,7 +187,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
             else if (cacheSequenceNum == sequenceNum) {
                 int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
                 if (Calculations.retransmissionRate(broadcastNum)){
-
+                    sendToNeighboringVehicles(myPacket);
                 }
             }
         }
@@ -211,6 +212,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     }
 
     public class Broadcaster extends Thread {
+
         @Override
         public void run() {
             while (true) {
