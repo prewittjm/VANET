@@ -5,7 +5,10 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by prewittjm on 3/7/15.
@@ -18,6 +21,9 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     private double width = 3.0;
     private ArrayList<Node> neighbors;
     private CacheTable cacheTable;
+    private ExecutorService myExecutor;
+    private int sequenceNumber;
+
 
     public Truck(int id, int portNumber, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
         this.id = id;
@@ -30,6 +36,8 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
 //            neighbors.add(node);
 //        }
         this.cacheTable = new CacheTable();
+        myExecutor = Executors.newFixedThreadPool(50);
+        sequenceNumber = 0;
     }
 
     public Truck(Node nodeIn) {
@@ -43,6 +51,8 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
 //            neighbors.add(node);
 //        }
         this.cacheTable = new CacheTable();
+        myExecutor = Executors.newFixedThreadPool(50);
+        sequenceNumber = 0;
     }
 
 
@@ -136,6 +146,11 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         return neighbors;
     }
 
+    public int increaseSequenceNumber(){
+        sequenceNumber++;
+        return sequenceNumber;
+    }
+
     @Override
     public void receivePacket(DatagramPacket packetIn) {
         ByteArrayInputStream in = new ByteArrayInputStream(packetIn.getData());
@@ -179,8 +194,38 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
 
     public void sendToNeighboringVehicles(Packet aPacket) {
         for (Node nVehicle : getNeighbors()){
+            cacheTable.increaseNumberOfBroadcasts(Integer.toString(nVehicle.getNodeID()));
+            double nVX = nVehicle.getxCoordinate();
+            double nVY = nVehicle.getyCoordinate();
 
+            if (Calculations.isPacketLostBetweenPoints(this.getxCoordinate(),this.getyCoordinate(), nVX, nVY)) {
+                aPacket.setPreviousHop(this.getId());
+                int nVPort = nVehicle.getPortNumber();
+                String nVehicleName = nVehicle.getHostname();
+                myExecutor.execute(new ClientThread(aPacket, nVehicleName, nVPort));
+            }
+            else {
+                System.out.println("Lost packet!");
+            }
+        }
+    }
+
+    public class Broadcaster extends Thread {
+        @Override
+        public void run() {
+            while (1) {
+                int currentSN = increaseSequenceNumber();
+                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), 69, getxCoordinate(), getyCoordinate());
+                sendToNeighboringVehicles(newPacket);
+                try {
+                    sleep(10);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
+
 
