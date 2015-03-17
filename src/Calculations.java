@@ -261,4 +261,10 @@ public class Calculations {
         double rate = Math.pow(.5, broadcastNumbers);
         return rate == 0 || random < rate;
     }
+
+    public static boolean retransmissionRate(int numberSent){
+        double random = Math.random();
+        double rate = Math.pow(.5, numberSent);
+        return rate == 0 || random < rate;
+    }
 }

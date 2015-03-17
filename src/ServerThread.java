@@ -8,10 +8,11 @@ import java.net.SocketException;
  */
 public class ServerThread {
     private int portNum;
+    private PacketAcknowledgement packAck;
 
-
-    ServerThread(int portNum) {
-    this.portNum = portNum;
+    ServerThread(int portNum, PacketAcknowledgement packIn) {
+        this.portNum = portNum;
+        this.packAck = packIn;
     }
 
     public void run() {
@@ -30,8 +31,7 @@ public class ServerThread {
             catch (IOException error) {
                 error.getMessage();
             }
-        //TODO Put callback function in here that walter was talking about that will take the packet and process it
-
+            packAck.receivePacket(packet);
         }
 
     }
