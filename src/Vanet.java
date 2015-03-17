@@ -23,7 +23,7 @@ public class Vanet {
         //System.out.println(canSend(car1, car2));
         List<Node> currNode = new ArrayList<Node>();
        try {
-           currNode = ConfigFileReader.readEntireFile("/Users/eddieseay/Dropbox/Auburn/AU Spring 15/Wireless and Mobile/VANET/src/config.txt");
+           currNode = ConfigFileReader.readEntireFile("/Users/prewittjm/IdeaProjects/VANET/src/config.txt");
        }
         catch (IOException error) {
         error.getMessage();
@@ -57,7 +57,7 @@ public class Vanet {
         int nodeInList = 0;
         for (Node node : currNode) {
             if (node.getHostname().equals(localHostName)) {
-                if (node.getNodeID() == 1) {
+                if (node.getNodeID() == 0) {
                     System.out.println("You are a truck.");
                     nodeMade = true;
                     truckCreated = true;
@@ -86,16 +86,16 @@ public class Vanet {
             Truck truck = new Truck(nodeUsing);
         }
 
-//        JFrame carGUI = new CarGUI(currNode);
-//        while (true) {
-//            try {
-//                Thread.sleep(1000);
-//                carGUI.repaint();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//
-//        }
+        JFrame carGUI = new CarGUI(currNode);
+        while (true) {
+            try {
+                Thread.sleep(1000);
+                carGUI.repaint();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
         //System.out.println(localHostName);
 
 

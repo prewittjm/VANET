@@ -213,7 +213,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     public class Broadcaster extends Thread {
         @Override
         public void run() {
-            while (1) {
+            while (true) {
                 int currentSN = increaseSequenceNumber();
                 Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), 69, getxCoordinate(), getyCoordinate());
                 sendToNeighboringVehicles(newPacket);

@@ -262,6 +262,11 @@ public class Calculations {
         return rate == 0 || random < rate;
     }
 
+    /**
+     * Part of the RBA. Takes in the number of times this packet has been sent to the node and returns the RBA value of true or false if the packet can be sent
+     * @param numberSent - number of times the packet has been sent
+     * @return - true if packet can be sent, false otherwise
+     */
     public static boolean retransmissionRate(int numberSent){
         double random = Math.random();
         double rate = Math.pow(.5, numberSent);
