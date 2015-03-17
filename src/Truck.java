@@ -17,9 +17,10 @@ public class Truck implements Vehicle  {
         this.speed = speed;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
-        for (Node node: neighborsIn) {
-            neighbors.add(node);
-        }
+        this.neighbors = neighborsIn;
+//        for (Node node: neighborsIn) {
+//            neighbors.add(node);
+//        }
     }
 
     public Truck(Node nodeIn) {
@@ -28,9 +29,10 @@ public class Truck implements Vehicle  {
         this.yCoordinate = nodeIn.getyCoordinate();
         this.portNumber = nodeIn.getPortNumber();
         this.hostname = nodeIn.getHostname();
-        for (Node node : nodeIn.getLinks()) {
-            neighbors.add(node);
-        }
+        this.neighbors = nodeIn.getLinks();
+//        for (Node node : nodeIn.getLinks()) {
+//            neighbors.add(node);
+//        }
     }
 
 

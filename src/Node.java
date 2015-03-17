@@ -9,7 +9,7 @@ public class Node {
     private int nodeID, portNumber;
     private double xCoordinate, yCoordinate;
     private String hostname;
-    private List<Node> links;
+    private ArrayList<Node> links;
 
     /**
      * Constructor that creates a new Node. The node will be created when the config file is first read. This way it will be
@@ -134,7 +134,7 @@ public class Node {
     public boolean removeLink(Node nodeIn) {
         return links.remove(nodeIn);
     }
-    public List<Node> getLinks() {
+    public ArrayList<Node> getLinks() {
         return links;
     }
     /**
