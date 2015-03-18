@@ -272,4 +272,28 @@ public class Calculations {
         double rate = Math.pow(.5, numberSent);
         return rate == 0 || random < rate;
     }
+
+    /**
+     * Checks to see if two vehicles are close to each other up to 3.0 meters
+     * @param veh1 - vehicle 1
+     * @param veh2 - vehicle 2
+     * @return - True if the vehicles are close together
+     */
+    public static boolean isCloseToNeighboringVehicle(Vehicle veh1, Vehicle veh2) {
+        if ((distanceBetweenVehicles(veh1, veh2) <= 3.0)) return true;
+        else return false;
+    }
+
+    /**
+     * Checks to see if two points are close to each other
+     * @param x1 - x coordinate of first point
+     * @param y1 - y coordinate of first point
+     * @param x2 - x coordinate of second point
+     * @param y2 - y coordinate of second point
+     * @return - True if the points are close to each other
+     */
+    public static boolean isCloseToNeighboringPoints(double x1, double y1, double x2, double y2) {
+        if ((distanceBetweenPoints(x1, y1, x2, y2) <= 3.0)) return true;
+        else return false;
+    }
 }

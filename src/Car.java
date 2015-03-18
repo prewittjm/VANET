@@ -22,7 +22,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private CacheTable cacheTable;
     private ExecutorService myExecutor;
     private int sequenceNumber;
-    private PacketAcknowledgement packetAck;
+    //private PacketAcknowledgement packetAck;
 
     /**
      * Creates a car from different parameters
@@ -48,12 +48,14 @@ public class Car implements Vehicle, PacketAcknowledgement {
         this.sequenceNumber = 0;
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = neighborsIn;
-        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+        ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
-        serverThread.run();
-        broadcasterThread.run();
+        serverThread.start();
+        System.out.println("Past server");
+
+        broadcasterThread.start();
     }
 
     /**
@@ -72,13 +74,13 @@ public class Car implements Vehicle, PacketAcknowledgement {
         cacheTable = new CacheTable();
         this.sequenceNumber = 0;
         myExecutor = Executors.newFixedThreadPool(50);
-        this.neighbors = getNeighbors();
-        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+        this.neighbors = nodeIn.getLinks();
+        ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
-        serverThread.run();
-        broadcasterThread.run();
+        serverThread.start();
+        broadcasterThread.start();
     }
     @Override
     public void setxCoordinate(double xCoordinate) {
@@ -236,11 +238,13 @@ public class Car implements Vehicle, PacketAcknowledgement {
             double nVX = nVehicle.getxCoordinate();
             double nVY = nVehicle.getyCoordinate();
 
+            //if (true) {
             if (Calculations.isPacketLostBetweenPoints(this.getxCoordinate(),this.getyCoordinate(), nVX, nVY)) {
                 aPacket.setPreviousHop(this.getId());
                 int nVPort = nVehicle.getPortNumber();
                 String nVehicleName = nVehicle.getHostname();
                 myExecutor.execute(new ClientThread(aPacket, nVehicleName, nVPort));
+                System.out.println("Packet Sent From Car!");
             }
             else {
                 System.out.println("Lost packet!");
@@ -254,12 +258,13 @@ public class Car implements Vehicle, PacketAcknowledgement {
     public class Broadcaster extends Thread {
         @Override
         public void run() {
+            System.out.println("Broadcaster Thread Created");
             while (true) {
                 int currentSN = increaseSequenceNumber();
                 Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), 69, getxCoordinate(), getyCoordinate());
                 sendToNeighboringVehicles(newPacket);
                 try {
-                    sleep(10);
+                    sleep(1000);
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();

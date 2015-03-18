@@ -21,22 +21,30 @@ public class ServerThread extends Thread{
         DatagramPacket packet;
         DatagramSocket socket = null;
         try {
-           socket = new DatagramSocket(portNum);
+            socket = new DatagramSocket(portNum);
         } catch (SocketException e) {
             e.printStackTrace();
         }
+        System.out.println("Server Socket Created");
+        System.out.println("-----------Running------------");
         while (true) {
-        packet = new DatagramPacket(new byte[4096], 4096);
+            packet = new DatagramPacket(new byte[4096], 4096);
+            System.out.println("Made it here");
             try {
                 socket.receive(packet);
+                System.out.println("Packet Received!");
+//            packAck.receivePacket(packet);
             }
             catch (IOException error) {
                 error.getMessage();
             }
-            catch(NullPointerException e) {
-                e.getMessage();
+            try {
+                packAck.receivePacket(packet);
             }
-            packAck.receivePacket(packet);
+            catch (NullPointerException e) {
+                e.getMessage();
+//            	System.exit(1);
+            }
         }
 
     }

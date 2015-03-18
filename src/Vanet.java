@@ -2,8 +2,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The main method that will be started on run
@@ -20,14 +19,14 @@ public class Vanet {
         //double distance;
         //distance = Math.sqrt((car1.getxCoordinate()-car2.getxCoordinate())*(car1.getxCoordinate()-car2.getxCoordinate())
 //                + (car1.getyCoordinate()-car2.getyCoordinate())*(car1.getyCoordinate()-car2.getyCoordinate()));
-    //System.out.println(distance);
+        //System.out.println(distance);
         //System.out.println(canSend(car1, car2));
         List<Node> currNode = new ArrayList<Node>();
-       try {
-           currNode = ConfigFileReader.readEntireFile("/Users/prewittjm/IdeaProjects/VANET/src/config.txt");
-       }
+        try {
+            currNode = ConfigFileReader.readEntireFile("/home/u3/ers0007/workspace/VANET-Lim/src/config.txt");
+        }
         catch (IOException error) {
-        error.getMessage();
+            error.getMessage();
         }
 //int j = 0;
 //        String name = "";
@@ -58,7 +57,7 @@ public class Vanet {
         int nodeInList = 0;
         for (Node node : currNode) {
             if (node.getHostname().equals(localHostName)) {
-                if (node.getNodeID() == 0) {
+                if (node.getNodeID() == 1) {
                     System.out.println("You are a truck.");
                     nodeMade = true;
                     truckCreated = true;
@@ -72,7 +71,7 @@ public class Vanet {
                     //Car car = new Car(node);
                 }
             }
-        currentCount++;
+            currentCount++;
         }
         if (!nodeMade) {
             System.out.println("Hostname not found in node list");
@@ -87,16 +86,40 @@ public class Vanet {
             Truck truck = new Truck(nodeUsing);
         }
 
-        JFrame carGUI = new CarGUI(currNode);
-        while (true) {
+        while (simulationInProgress) {
             try {
+//				Scanner myStopScanner = new Scanner(System.in);
+//
+//        		if (myStopScanner.next() == "stop"){
+//					System.exit(1);
+//				}
+//        		else {Thread.sleep(1000);}
                 Thread.sleep(1000);
-                carGUI.repaint();
             } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-
         }
+//        Scanner myStopScanner = new Scanner(System.in);
+//        while (myStopScanner.next() != "stop") {
+//        	try {
+//				Thread.sleep(1000000000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//        }
+//        JFrame carGUI = new CarGUI(currNode);
+//        while (true) {//            if (Calculations.isPacketLostBetweenPoints(this.getxCoordinate(),this.getyCoordinate(), nVX, nVY)) {
+
+//            try {
+//                Thread.sleep(1000);
+//                carGUI.repaint();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
         //System.out.println(localHostName);
 
 
@@ -113,7 +136,8 @@ public class Vanet {
 //
 //    if (!currNode.isEmpty()) {
 //        int i = 0;
-//        while (i < currNode.size()) {
+//        while (i < currNode.size()//            if (Calculations.isPacketLostBetweenPoints(this.getxCoordinate(),this.getyCoordinate(), nVX, nVY)) {
+//) {
 //            System.out.println(currNode.get(i).toString());
 //            i++;
 //        }

@@ -21,7 +21,6 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     private CacheTable cacheTable;
     private ExecutorService myExecutor;
     private int sequenceNumber;
-    private PacketAcknowledgement packetAck;
 
     /**
      * Creates a truck from a given set of data
@@ -47,12 +46,12 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         this.cacheTable = new CacheTable();
         myExecutor = Executors.newFixedThreadPool(50);
         sequenceNumber = 0;
-        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+        ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
-        serverThread.run();
-        broadcasterThread.run();
+        serverThread.start();
+        broadcasterThread.start();
     }
 
     /**
@@ -72,12 +71,12 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         this.cacheTable = new CacheTable();
         myExecutor = Executors.newFixedThreadPool(50);
         sequenceNumber = 0;
-        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+        ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
-        serverThread.run();
-        broadcasterThread.run();
+        serverThread.start();
+        broadcasterThread.start();
     }
 
 
@@ -181,7 +180,12 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     }
 
     /**
-     * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
+     * Overriden method from the //        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+     //        Broadcaster broadcasterThread = new Broadcaster();
+     //        serverThread.setDaemon(true);
+     //        broadcasterThread.setDaemon(true);
+     //        serverThread.run();
+     //        broadcasterThread.run();PacketAcknowledgement Interface. Will be called every time a packed is
      * received by the server. Will take the packet and determine if should be retransmitted based on
      * the RBA algorithm.
      * @param packetIn - the packet received by the server
@@ -238,10 +242,12 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
             double nVY = nVehicle.getyCoordinate();
 
             if (Calculations.isPacketLostBetweenPoints(this.getxCoordinate(),this.getyCoordinate(), nVX, nVY)) {
+                //if (true) {
                 aPacket.setPreviousHop(this.getId());
                 int nVPort = nVehicle.getPortNumber();
                 String nVehicleName = nVehicle.getHostname();
                 myExecutor.execute(new ClientThread(aPacket, nVehicleName, nVPort));
+                System.out.println("Packet Sent!");
             }
             else {
                 System.out.println("Lost packet!");
@@ -261,7 +267,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
                 Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), 69, getxCoordinate(), getyCoordinate());
                 sendToNeighboringVehicles(newPacket);
                 try {
-                    sleep(10);
+                    sleep(1000);
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();

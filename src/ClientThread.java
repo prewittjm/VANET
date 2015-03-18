@@ -13,6 +13,7 @@ public class ClientThread extends Thread {
     private Packet packet;
     private String hostname;
     private int port;
+
     ClientThread(Packet packet, String hostname, int port) {
         this.packet = packet;
         this.hostname = hostname;
@@ -56,12 +57,11 @@ public class ClientThread extends Thread {
         } catch (IOException e) {
             e.getMessage();
         }
-        packet1 = new DatagramPacket(bytePacket, bytePacket.length,ipAddress,port);
+        packet1 = new DatagramPacket(bytePacket, bytePacket.length, ipAddress, port);
 
         try {
             socket.send(packet1);
-        }
-        catch (IOException error) {
+        } catch (IOException error) {
             error.getMessage();
         }
 
