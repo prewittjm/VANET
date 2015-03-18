@@ -12,6 +12,7 @@ public class Packet implements Serializable {
     private int sequenceNumber, id, previousHop;
     private double speed, xCoordinate, yCoordinate;
     private String sourceNode;
+    private long currentTime;
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
@@ -22,7 +23,7 @@ public class Packet implements Serializable {
      * @param xCoordinate - the current xCoordinate of the car sending the packet
      * @param yCoordinate - the current yCoordinate of the car sending the packet
      */
-    public Packet(int sequenceNumber, String sourceNode, int id, int previousHop, double speed, double xCoordinate, double yCoordinate) {
+    public Packet(int sequenceNumber, String sourceNode, int id, int previousHop, double speed, double xCoordinate, double yCoordinate, long currentTime) {
         this.sequenceNumber = sequenceNumber;
         this.previousHop = previousHop;
         this.id = id;
@@ -30,6 +31,7 @@ public class Packet implements Serializable {
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.sourceNode = sourceNode;
+        this.currentTime = currentTime;
     }
 
     /**
@@ -144,5 +146,21 @@ public class Packet implements Serializable {
      */
     public String getSourceNode() {
         return sourceNode;
+    }
+
+    /**
+     * Returns the current time in milliseconds
+     * @return - long representing the current time
+     */
+    public long getCurrentTime() {
+        return currentTime;
+    }
+
+    /**
+     * Sets a new current time
+     * @param currentTime - the new current time
+     */
+    public void setCurrentTime(long currentTime) {
+        this.currentTime = currentTime;
     }
 }

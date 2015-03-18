@@ -245,9 +245,12 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         int sequenceNum = myPacket.getSequenceNumber();
         int nodeID = this.getId();
         int sourceNodeID = myPacket.getId();
+        long currentTime = System.currentTimeMillis();
+        long latency = currentTime - myPacket.getCurrentTime();
         System.out.println("-----------------------------");
         System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
-        + "\nSequence Number: " + myPacket.getSequenceNumber() + "Coordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate());
+        + "\nSequence Number: " + myPacket.getSequenceNumber() + "Coordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+        + "\nLatency of this packet: " + latency);
         System.out.println("-----------------------------");
 
         if (nodeID != sourceNodeID){
@@ -301,7 +304,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         public void run() {
             while (true) {
                 int currentSN = increaseSequenceNumber();
-                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), getSpeed(), getxCoordinate(), getyCoordinate());
+                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis());
                 sendToNeighboringVehicles(newPacket);
                 try {
                     sleep(1000);

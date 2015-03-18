@@ -246,10 +246,12 @@ public class Car implements Vehicle, PacketAcknowledgement {
         int sequenceNum = myPacket.getSequenceNumber();
         int nodeID = this.getId();
         int sourceNodeID = myPacket.getId();
+        long currentTime = System.currentTimeMillis();
+        long latency = currentTime - myPacket.getCurrentTime();
         System.out.println("-----------------------------");
         System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
-                + "\nSequence Number: " + myPacket.getSequenceNumber() + "Coordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate());
-        System.out.println("-----------------------------");
+                + "\nSequence Number: " + myPacket.getSequenceNumber() + "Coordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+                + "\nLatency of this packet: " + latency);
         if (nodeID != sourceNodeID){
             int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
 
@@ -298,7 +300,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
             System.out.println("Broadcaster Thread Created");
             while (true) {
                 int currentSN = increaseSequenceNumber();
-                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), getSpeed(), getxCoordinate(), getyCoordinate());
+                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis());
                 sendToNeighboringVehicles(newPacket);
                 try {
                     sleep(1000);
