@@ -21,6 +21,8 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     private CacheTable cacheTable;
     private ExecutorService myExecutor;
     private int sequenceNumber;
+    private int packetsSent;
+    private int packetsLost;
 
     /**
      * Creates a truck from a given set of data
@@ -40,18 +42,20 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         this.yCoordinate = yCoordinate;
         this.neighbors = neighborsIn;
         this.hostname = hostname;
-//        for (Node node: neighborsIn) {
-//            neighbors.add(node);
-//        }
         this.cacheTable = new CacheTable();
         myExecutor = Executors.newFixedThreadPool(50);
         sequenceNumber = 0;
+        packetsSent = 0;
+        packetsLost = 0;
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
+        PacketsThread packetsThread = new PacketsThread();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
+        packetsThread.setDaemon(true);
         serverThread.start();
         broadcasterThread.start();
+        //packetsThread.start();
     }
 
     /**
@@ -65,18 +69,21 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         this.portNumber = nodeIn.getPortNumber();
         this.hostname = nodeIn.getHostname();
         this.neighbors = nodeIn.getLinks();
-//        for (Node node : nodeIn.getLinks()) {
-//            neighbors.add(node);
-//        }
         this.cacheTable = new CacheTable();
         myExecutor = Executors.newFixedThreadPool(50);
         sequenceNumber = 0;
+        packetsSent = 0;
+        packetsLost = 0;
+        this.speed = 35.0;
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
+        PacketsThread packetsThread = new PacketsThread();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
+        packetsThread.setDaemon(true);
         serverThread.start();
         broadcasterThread.start();
+        //packetsThread.start();
     }
 
 
@@ -180,12 +187,38 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     }
 
     /**
-     * Overriden method from the //        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
-     //        Broadcaster broadcasterThread = new Broadcaster();
-     //        serverThread.setDaemon(true);
-     //        broadcasterThread.setDaemon(true);
-     //        serverThread.run();
-     //        broadcasterThread.run();PacketAcknowledgement Interface. Will be called every time a packed is
+     * Returns packets sent
+     * @return - number of packets sent
+     */
+    public int getPacketsSent() {
+        return packetsSent;
+    }
+
+    /**
+     * Returns packets lost
+     * @return - number of packets lost
+     */
+    public int getPacketsLost() {
+        return packetsLost;
+    }
+
+    /**
+     * Returns total number of packets
+     * @return - number of total packets
+     */
+    public int getTotalNumberOfPackets() {
+        return getPacketsLost() + getPacketsSent();
+    }
+
+    /**
+     * Returns packet lost rate
+     * @return - packet lost rate
+     */
+    public double lostPacketsOverTotal() {
+        return getPacketsLost() / getTotalNumberOfPackets();
+    }
+    /**
+     * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
      * received by the server. Will take the packet and determine if should be retransmitted based on
      * the RBA algorithm.
      * @param packetIn - the packet received by the server
@@ -212,8 +245,10 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         int sequenceNum = myPacket.getSequenceNumber();
         int nodeID = this.getId();
         int sourceNodeID = myPacket.getId();
-
-        System.out.println("Received packet from " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode());
+        System.out.println("-----------------------------");
+        System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+        + "\nSequence Number: " + myPacket.getSequenceNumber() + "Coordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate());
+        System.out.println("-----------------------------");
 
         if (nodeID != sourceNodeID){
             int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
@@ -247,10 +282,12 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
                 int nVPort = nVehicle.getPortNumber();
                 String nVehicleName = nVehicle.getHostname();
                 myExecutor.execute(new ClientThread(aPacket, nVehicleName, nVPort));
-                System.out.println("Packet Sent!");
+                packetsSent = packetsSent + 1;
+               // System.out.println("Packet Sent!");
             }
             else {
                 System.out.println("Lost packet!");
+                packetsLost = packetsLost + 1;
             }
         }
     }
@@ -258,13 +295,13 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     /**
      * This thread constantly sends packets to each neighbor in the neighboring nodes list.
      */
-    public class Broadcaster extends Thread {
+    private class Broadcaster extends Thread {
 
         @Override
         public void run() {
             while (true) {
                 int currentSN = increaseSequenceNumber();
-                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), 69, getxCoordinate(), getyCoordinate());
+                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), getSpeed(), getxCoordinate(), getyCoordinate());
                 sendToNeighboringVehicles(newPacket);
                 try {
                     sleep(1000);
@@ -274,6 +311,32 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
                 }
             }
         }
+    }
+    /**
+     * This thread will print out total packets lost, packets sent from this node, and packet lost rate.
+     */
+    private class PacketsThread extends Thread {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    sleep(1000);
+                }
+                catch (InterruptedException e) {
+                    e.getMessage();
+                }
+                System.out.println("*********************************************************************");
+                System.out.println("Total Number of Packets lost from this node: " + getPacketsLost());
+                System.out.println("Total Number of Packets sent from this node: " + getTotalNumberOfPackets());
+                System.out.println("Packet Lost Rate: " + lostPacketsOverTotal());
+                System.out.println("*********************************************************************");
+
+            }
+
+
+        }
+
+
     }
 }
 

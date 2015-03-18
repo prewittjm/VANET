@@ -22,6 +22,8 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private CacheTable cacheTable;
     private ExecutorService myExecutor;
     private int sequenceNumber;
+    private int packetsSent;
+    private int packetsLost;
     //private PacketAcknowledgement packetAck;
 
     /**
@@ -41,21 +43,21 @@ public class Car implements Vehicle, PacketAcknowledgement {
         this.hostname = hostname;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
-//        for (Node node : neighborsIn) {
-//            neighbors.add(node);
-//        }
         cacheTable = new CacheTable();
         this.sequenceNumber = 0;
+        packetsSent = 0;
+        packetsLost = 0;
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = neighborsIn;
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
+        PacketsThread packetsThread = new PacketsThread();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
+        packetsThread.setDaemon(true);
         serverThread.start();
-        System.out.println("Past server");
-
         broadcasterThread.start();
+        //packetsThread.start();
     }
 
     /**
@@ -68,19 +70,22 @@ public class Car implements Vehicle, PacketAcknowledgement {
         this.yCoordinate = nodeIn.getyCoordinate();
         this.xCoordinate = nodeIn.getxCoordinate();
         this.hostname = nodeIn.getHostname();
-//        for (Node node : nodeIn.getLinks()) {
-//            neighbors.add(node);
-//        }
         cacheTable = new CacheTable();
         this.sequenceNumber = 0;
+        packetsSent = 0;
+        packetsLost = 0;
+        this.speed = 30.0;
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = nodeIn.getLinks();
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
+        PacketsThread packetsThread = new PacketsThread();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
+        packetsThread.setDaemon(true);
         serverThread.start();
         broadcasterThread.start();
+        //packetsThread.start();
     }
     @Override
     public void setxCoordinate(double xCoordinate) {
@@ -180,6 +185,37 @@ public class Car implements Vehicle, PacketAcknowledgement {
         sequenceNumber++;
         return sequenceNumber;
     }
+    /**
+     * Returns packets sent
+     * @return - number of packets sent
+     */
+    public int getPacketsSent() {
+        return packetsSent;
+    }
+
+    /**
+     * Returns packets lost
+     * @return - number of packets lost
+     */
+    public int getPacketsLost() {
+        return packetsLost;
+    }
+
+    /**
+     * Returns total number of packets
+     * @return - number of total packets
+     */
+    public int getTotalNumberOfPackets() {
+        return getPacketsLost() + getPacketsSent();
+    }
+
+    /**
+     * Returns packet lost rate
+     * @return - packet lost rate
+     */
+    public double lostPacketsOverTotal() {
+        return getPacketsLost() / getTotalNumberOfPackets();
+    }
 
     /**
      * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
@@ -210,9 +246,10 @@ public class Car implements Vehicle, PacketAcknowledgement {
         int sequenceNum = myPacket.getSequenceNumber();
         int nodeID = this.getId();
         int sourceNodeID = myPacket.getId();
-
-        System.out.println("Received packet from " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode());
-
+        System.out.println("-----------------------------");
+        System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+                + "\nSequence Number: " + myPacket.getSequenceNumber() + "Coordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate());
+        System.out.println("-----------------------------");
         if (nodeID != sourceNodeID){
             int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
 
@@ -244,7 +281,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 int nVPort = nVehicle.getPortNumber();
                 String nVehicleName = nVehicle.getHostname();
                 myExecutor.execute(new ClientThread(aPacket, nVehicleName, nVPort));
-                System.out.println("Packet Sent From Car!");
+               // System.out.println("Packet Sent From Car!");
             }
             else {
                 System.out.println("Lost packet!");
@@ -255,13 +292,13 @@ public class Car implements Vehicle, PacketAcknowledgement {
     /**
      * This thread constantly sends packets to the neighboring nodes
      */
-    public class Broadcaster extends Thread {
+    private class Broadcaster extends Thread {
         @Override
         public void run() {
             System.out.println("Broadcaster Thread Created");
             while (true) {
                 int currentSN = increaseSequenceNumber();
-                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), 69, getxCoordinate(), getyCoordinate());
+                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), getSpeed(), getxCoordinate(), getyCoordinate());
                 sendToNeighboringVehicles(newPacket);
                 try {
                     sleep(1000);
@@ -271,6 +308,33 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 }
             }
         }
+    }
+
+    /**
+     * This thread will print out total packets lost, packets sent from this node, and packet lost rate.
+     */
+    private class PacketsThread extends Thread {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    sleep(1000);
+                }
+                catch (InterruptedException e) {
+                    e.getMessage();
+                }
+                System.out.println("*********************************************************************");
+                System.out.println("Total Number of Packets lost from this node: " + getPacketsLost());
+                System.out.println("Total Number of Packets sent from this node: " + getTotalNumberOfPackets());
+                System.out.println("Packet Lost Rate: " + lostPacketsOverTotal());
+                System.out.println("*********************************************************************");
+
+            }
+
+
+        }
+
+
     }
 
 }
