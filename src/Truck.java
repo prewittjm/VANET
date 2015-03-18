@@ -21,6 +21,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     private CacheTable cacheTable;
     private ExecutorService myExecutor;
     private int sequenceNumber;
+    private PacketAcknowledgement packetAck;
 
     /**
      * Creates a truck from a given set of data
@@ -46,6 +47,12 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         this.cacheTable = new CacheTable();
         myExecutor = Executors.newFixedThreadPool(50);
         sequenceNumber = 0;
+        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+        Broadcaster broadcasterThread = new Broadcaster();
+        serverThread.setDaemon(true);
+        broadcasterThread.setDaemon(true);
+        serverThread.run();
+        broadcasterThread.run();
     }
 
     /**
@@ -65,6 +72,12 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         this.cacheTable = new CacheTable();
         myExecutor = Executors.newFixedThreadPool(50);
         sequenceNumber = 0;
+        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+        Broadcaster broadcasterThread = new Broadcaster();
+        serverThread.setDaemon(true);
+        broadcasterThread.setDaemon(true);
+        serverThread.run();
+        broadcasterThread.run();
     }
 
 

@@ -6,7 +6,7 @@ import java.net.SocketException;
 /**
  * Created by prewittjm on 3/12/15.
  */
-public class ServerThread {
+public class ServerThread extends Thread{
     private int portNum;
     private PacketAcknowledgement packAck;
 
@@ -15,6 +15,7 @@ public class ServerThread {
         this.packAck = packIn;
     }
 
+    @Override
     public void run() {
         DatagramPacket packet = null;
         DatagramSocket socket = null;

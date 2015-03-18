@@ -22,6 +22,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private CacheTable cacheTable;
     private ExecutorService myExecutor;
     private int sequenceNumber;
+    private PacketAcknowledgement packetAck;
 
     /**
      * Creates a car from different parameters
@@ -47,6 +48,12 @@ public class Car implements Vehicle, PacketAcknowledgement {
         this.sequenceNumber = 0;
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = neighborsIn;
+        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+        Broadcaster broadcasterThread = new Broadcaster();
+        serverThread.setDaemon(true);
+        broadcasterThread.setDaemon(true);
+        serverThread.run();
+        broadcasterThread.run();
     }
 
     /**
@@ -66,6 +73,12 @@ public class Car implements Vehicle, PacketAcknowledgement {
         this.sequenceNumber = 0;
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = getNeighbors();
+        ServerThread serverThread = new ServerThread(getPortNumber(), packetAck);
+        Broadcaster broadcasterThread = new Broadcaster();
+        serverThread.setDaemon(true);
+        broadcasterThread.setDaemon(true);
+        serverThread.run();
+        broadcasterThread.run();
     }
     @Override
     public void setxCoordinate(double xCoordinate) {
