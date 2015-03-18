@@ -1,4 +1,5 @@
 /**
+ * Class that creates a packet and allows manipulation of that packet
  * Created by prewittjm on 3/7/15.
  */
 

@@ -1,4 +1,5 @@
 /**
+ * Creates a GUI showing all the cars
  * Created by prewittjm on 3/12/15.
  */
 

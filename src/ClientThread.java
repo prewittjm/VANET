@@ -4,6 +4,7 @@ import java.io.ObjectOutputStream;
 import java.net.*;
 
 /**
+ * Thread that creates a UDP client for a thread
  * Created by prewittjm on 3/12/15.
  */
 

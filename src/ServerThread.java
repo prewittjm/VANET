@@ -4,6 +4,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 /**
+ * Creates a new UDP server socket that waits for a packet from another neighbor
  * Created by prewittjm on 3/12/15.
  */
 public class ServerThread extends Thread{
@@ -17,7 +18,7 @@ public class ServerThread extends Thread{
 
     @Override
     public void run() {
-        DatagramPacket packet = null;
+        DatagramPacket packet;
         DatagramSocket socket = null;
         try {
            socket = new DatagramSocket(portNum);
@@ -31,6 +32,9 @@ public class ServerThread extends Thread{
             }
             catch (IOException error) {
                 error.getMessage();
+            }
+            catch(NullPointerException e) {
+                e.getMessage();
             }
             packAck.receivePacket(packet);
         }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The main method that will be started on run
  * Created by prewittjm on 3/10/15.
  */
 public class Vanet {
