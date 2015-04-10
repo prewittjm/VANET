@@ -23,7 +23,7 @@ public class Vanet {
         //System.out.println(canSend(car1, car2));
         List<Node> currNode = new ArrayList<Node>();
         try {
-            currNode = ConfigFileReader.readEntireFile("/home/u3/ers0007/workspace/VANET-Lim/src/config.txt");
+            currNode = ConfigFileReader.readEntireFile("/home/u3/jmp0028/workspace/VANET/src/config.txt");
         }
         catch (IOException error) {
             error.getMessage();
@@ -59,32 +59,32 @@ public class Vanet {
             if (node.getHostname().equals(localHostName)) {
                 if (node.getNodeID() == 1) {
                     System.out.println("You are a truck.");
+                    System.out.println("NODE ID: " + node.getNodeID());
                     nodeMade = true;
                     truckCreated = true;
-                    nodeInList = currentCount;
-                    //Truck truck = new Truck(node);
+//                    nodeInList = currentCount;
+//                    Node nodeUsing = currNode.get(nodeInList);
+//                    Truck truck = new Truck(nodeUsing);
+                    Node nodeUsing = node;
+                    Truck truck = new Truck(nodeUsing);
+                    break;
                 } else {
                     System.out.println("You are a car");
                     nodeMade = true;
                     carCreated = true;
-                    nodeInList = currentCount;
-                    //Car car = new Car(node);
+//                    nodeInList = currentCount;
+//                    Node nodeUsing = currNode.get(nodeInList);
+//                    Car car = new Car(nodeUsing);
+                    Car car = new Car(node);
+                    break;
                 }
             }
-            currentCount++;
         }
         if (!nodeMade) {
             System.out.println("Hostname not found in node list");
             System.exit(0);
         }
-        else if (carCreated) {
-            Node nodeUsing = currNode.get(nodeInList);
-            Car car = new Car(nodeUsing);
-        }
-        else if (truckCreated) {
-            Node nodeUsing = currNode.get(nodeInList);
-            Truck truck = new Truck(nodeUsing);
-        }
+
 
         while (simulationInProgress) {
             try {
@@ -150,7 +150,18 @@ public class Vanet {
 
     }
 
-
+/* int i = nodes.count
+ * Hashtable<String,Double>[] recLossArray = (Hashtable<String,Double>[])new Hashtable<?,?>[i];
+ * while (i < recLossArray.size) {
+ * 	recLossArray[i] = new Hashtable<String,Double>();
+ * 	i++;
+ * }
+ * 
+ * List<Hashtable<String,Double>> recLoss = new ArrayList<Hashtable<String,Double>>();
+ * 
+ * 
+ * 
+ */
 
 
 

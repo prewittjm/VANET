@@ -11,7 +11,7 @@ public class CacheTable {
      * Creates the new CacheTable.
      */
     public CacheTable() {
-    cacheTable = new Hashtable<String, PacketInfo>();
+        cacheTable = new Hashtable<String, PacketInfo>();
     }
 
     /**
@@ -20,13 +20,13 @@ public class CacheTable {
      * @return returns the sequenceNumber of the packet if found, otherwise it returns -1
      */
     public int checkForSequenceNumber(String hostName) {
-    PacketInfo packetInfo = cacheTable.get(hostName);
-    if (packetInfo == null) {
-        return -1;
-    }
-    else {
-        return packetInfo.getSequenceNumber();
-    }
+        PacketInfo packetInfo = cacheTable.get(hostName);
+        if (packetInfo == null) {
+            return -1;
+        }
+        else {
+            return packetInfo.getSequenceNumber();
+        }
     }
 
     /**
@@ -35,13 +35,13 @@ public class CacheTable {
      * @return - number of broadcasts of the specific packet
      */
     public int getNumberOfBroadcasts(String hostName) {
-    PacketInfo packetInfo = cacheTable.get(hostName);
-    if (packetInfo == null) {
-        return 0;
-    }
-    else {
-        return packetInfo.getCurrentNumberOfBroadcasts();
-    }
+        PacketInfo packetInfo = cacheTable.get(hostName);
+        if (packetInfo == null) {
+            return 0;
+        }
+        else {
+            return packetInfo.getCurrentNumberOfBroadcasts();
+        }
 
     }
 

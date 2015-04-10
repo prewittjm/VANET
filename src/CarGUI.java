@@ -11,7 +11,7 @@ import javax.swing.*;
 
 @SuppressWarnings("serial")
 public class CarGUI extends JFrame {
-private List<Node> nList;
+    private List<Node> nList;
 
     public CarGUI(List<Node> list) {
         super("Road Train");

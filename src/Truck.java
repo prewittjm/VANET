@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
  * Created by prewittjm on 3/7/15.
  */
 public class Truck implements Vehicle, PacketAcknowledgement  {
-    private int id, portNumber;
+    private int myID, portNumber;
     private String hostname;
     private double speed, xCoordinate, yCoordinate;
     private double length = 10.0;
@@ -35,7 +35,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
      * @param hostname - the hostname of the truck
      */
     public Truck(int id, int portNumber, String hostname, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
-        this.id = id;
+        this.myID = id;
         this.portNumber = portNumber;
         this.speed = speed;
         this.xCoordinate = xCoordinate;
@@ -50,12 +50,15 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
         PacketsThread packetsThread = new PacketsThread();
+        UpdateLocation updateThread = new UpdateLocation();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
         packetsThread.setDaemon(true);
+        updateThread.setDaemon(true);
         serverThread.start();
         broadcasterThread.start();
-        //packetsThread.start();
+        packetsThread.start();
+        updateThread.start();
     }
 
     /**
@@ -63,7 +66,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
      * @param nodeIn - node which will turn into a truck
      */
     public Truck(Node nodeIn) {
-        this.id = nodeIn.getNodeID();
+        this.myID = nodeIn.getNodeID();
         this.xCoordinate = nodeIn.getxCoordinate();
         this.yCoordinate = nodeIn.getyCoordinate();
         this.portNumber = nodeIn.getPortNumber();
@@ -78,12 +81,15 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
         Broadcaster broadcasterThread = new Broadcaster();
         PacketsThread packetsThread = new PacketsThread();
+        UpdateLocation updateThread = new UpdateLocation();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
         packetsThread.setDaemon(true);
+        updateThread.setDaemon(true);
         serverThread.start();
         broadcasterThread.start();
-        //packetsThread.start();
+        packetsThread.start();
+        updateThread.start();
     }
 
 
@@ -128,8 +134,8 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
     }
 
     @Override
-    public int getId() {
-        return id;
+    public int getMyID() {
+        return myID;
     }
 
     @Override
@@ -139,7 +145,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
 
     @Override
     public void setId(int id) {
-        this.id = id;
+        this.myID = id;
     }
 
     @Override
@@ -210,12 +216,25 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         return getPacketsLost() + getPacketsSent();
     }
 
+    public int increasePacketLost() {
+        packetsLost++;
+        return packetsLost;
+    }
+    public int increasePacketSent() {
+        packetsSent++;
+        return packetsSent;
+    }
     /**
      * Returns packet lost rate
      * @return - packet lost rate
      */
     public double lostPacketsOverTotal() {
-        return getPacketsLost() / getTotalNumberOfPackets();
+        if (getTotalNumberOfPackets() == 0) {
+            return 0.0;
+        }
+        else {
+            return (double) packetsLost / ((double) packetsLost + (double) packetsSent);
+        }
     }
     /**
      * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
@@ -223,6 +242,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
      * the RBA algorithm.
      * @param packetIn - the packet received by the server
      */
+    int receivePrintCounter = 0;
     @Override
     public void receivePacket(DatagramPacket packetIn) {
         ByteArrayInputStream in = new ByteArrayInputStream(packetIn.getData());
@@ -243,16 +263,29 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
             e.getMessage();
         }
         int sequenceNum = myPacket.getSequenceNumber();
-        int nodeID = this.getId();
+        int nodeID = this.getMyID();
         int sourceNodeID = myPacket.getId();
+        for (Node node: neighbors) {
+            if (node.getNodeID() == myPacket.getPreviousHop()) {
+                node.setxCoordinate(myPacket.getxCoordinate());
+                node.setyCoordinate(myPacket.getyCoordinate());
+//        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
+//        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+            }
+        }
         long currentTime = System.currentTimeMillis();
-        long latency = currentTime - myPacket.getCurrentTime();
-        System.out.println("-----------------------------");
-        System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
-        + "\nSequence Number: " + myPacket.getSequenceNumber() + "Coordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
-        + "\nLatency of this packet: " + latency);
-        System.out.println("-----------------------------");
-
+        long latency = (long)(currentTime - myPacket.getCurrentTime());
+        if (receivePrintCounter == 100) {
+            receivePrintCounter = 0;
+            System.out.println("-----------------------------");
+            System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+                    + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+                    + "\nLatency of this packet: " + latency);
+            System.out.println("-----------------------------");
+        }
+        else {
+            receivePrintCounter++;
+        }
         if (nodeID != sourceNodeID){
             int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
 
@@ -266,6 +299,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
                 }
             }
         }
+
     }
 
     /**
@@ -273,6 +307,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
      * to be lost using the calculation.
      * @param aPacket - packet being forwarded to all the nodes
      */
+
     public void sendToNeighboringVehicles(Packet aPacket) {
         for (Node nVehicle : getNeighbors()){
             cacheTable.increaseNumberOfBroadcasts(Integer.toString(nVehicle.getNodeID()));
@@ -281,16 +316,16 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
 
             if (Calculations.isPacketLostBetweenPoints(this.getxCoordinate(),this.getyCoordinate(), nVX, nVY)) {
                 //if (true) {
-                aPacket.setPreviousHop(this.getId());
+                aPacket.setPreviousHop(this.getMyID());
                 int nVPort = nVehicle.getPortNumber();
                 String nVehicleName = nVehicle.getHostname();
                 myExecutor.execute(new ClientThread(aPacket, nVehicleName, nVPort));
-                packetsSent = packetsSent + 1;
-               // System.out.println("Packet Sent!");
+                increasePacketSent();
+                // System.out.println("Packet Sent!");
             }
             else {
-                System.out.println("Lost packet!");
-                packetsLost = packetsLost + 1;
+                //System.out.println("Lost packet!");
+                increasePacketLost();
             }
         }
     }
@@ -304,10 +339,11 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         public void run() {
             while (true) {
                 int currentSN = increaseSequenceNumber();
-                Packet newPacket = new Packet(currentSN, getHostname(), (int) getId(), (int) getId(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis());
+                //System.out.println("ID OF PACKET CREATOR: "+ getMyID());
+                Packet newPacket = new Packet(currentSN, getHostname(), (int) this.getId(), (int) this.getId(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis());
                 sendToNeighboringVehicles(newPacket);
                 try {
-                    sleep(1000);
+                    sleep(10);
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();
@@ -323,7 +359,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         public void run() {
             while (true) {
                 try {
-                    sleep(1000);
+                    sleep(10000);
                 }
                 catch (InterruptedException e) {
                     e.getMessage();
@@ -331,14 +367,29 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
                 System.out.println("*********************************************************************");
                 System.out.println("Total Number of Packets lost from this node: " + getPacketsLost());
                 System.out.println("Total Number of Packets sent from this node: " + getTotalNumberOfPackets());
-                System.out.println("Packet Lost Rate: " + lostPacketsOverTotal());
+                System.out.println("Throughput: " + getPacketsSent() / getTotalNumberOfPackets());
+                System.out.println("Packet Loss %: " + lostPacketsOverTotal());
                 System.out.println("*********************************************************************");
-
             }
-
-
         }
-
+    }
+    /*
+     * This thread will update the location based on speed
+     */
+    private class UpdateLocation extends Thread {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    sleep(1000);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                double newX = getSpeed() + getxCoordinate();
+                setxCoordinate(newX);
+            }
+        }
 
     }
 }

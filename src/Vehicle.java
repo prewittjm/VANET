@@ -61,7 +61,7 @@ public interface Vehicle {
      * Returns the unique address of the vehicle
      * @return int representing the unique address of the vehicle
      */
-    public int getId();
+    public int getMyID();
 
     /**
      * Sets a new unique address for the vehicle

@@ -91,11 +91,11 @@ public class Calculations {
         int veh2ToTheTop;
         int xIntersect = 0;
         int yIntersect = 0;
-        if (veh1.getId() == 1) {
+        if (veh1.getMyID() == 1) {
             veh1HalfLength = 10/2;
             veh2HalfLength = 5/2;
         }
-        else if (veh2.getId() == 1) {
+        else if (veh2.getMyID() == 1) {
             veh2HalfLength = 10/2;
             veh1HalfLength = 5/2;
         }

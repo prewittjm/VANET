@@ -29,10 +29,10 @@ public class ServerThread extends Thread{
         System.out.println("-----------Running------------");
         while (true) {
             packet = new DatagramPacket(new byte[4096], 4096);
-           // System.out.println("Made it here");
+            // System.out.println("Made it here");
             try {
                 socket.receive(packet);
-               // System.out.println("Packet Received!");
+                // System.out.println("Packet Received!");
 //            packAck.receivePacket(packet);
             }
             catch (IOException error) {

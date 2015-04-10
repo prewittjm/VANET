@@ -27,7 +27,7 @@ public class ConfigFileReader {
         Map<Integer, List<Integer>> linksForNode = new HashMap<Integer, List<Integer>>();
         Map<Integer, Node> idForNode = new HashMap<Integer, Node>();
         while (fileScan.hasNextLine()) {
-           // currentLine = fileScan.nextLine();
+            // currentLine = fileScan.nextLine();
             lines.add(fileScan.nextLine());
         }
 
