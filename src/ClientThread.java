@@ -60,6 +60,7 @@ public class ClientThread extends Thread {
         packet1 = new DatagramPacket(bytePacket, bytePacket.length, ipAddress, port);
 
         try {
+            assert socket != null;
             socket.send(packet1);
         } catch (IOException error) {
             error.getMessage();

@@ -26,6 +26,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private int sequenceNumber;
     private int packetsSent;
     private int packetsLost;
+    private boolean ifInRoadTrain;
     //private PacketAcknowledgement packetAck;
 
     /**
@@ -38,32 +39,33 @@ public class Car implements Vehicle, PacketAcknowledgement {
      * @param neighborsIn - the neighboring nodes of the car
      * @param hostname - the hostname this car uses to run the program on
      */
-    public Car(int address, int portNumber, String hostname, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
-        this.myID = address;
-        this.portNumber = portNumber;
-        this.speed = speed;
-        this.hostname = hostname;
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
-        cacheTable = new CacheTable();
-        this.sequenceNumber = 0;
-        packetsSent = 0;
-        packetsLost = 0;
-        myExecutor = Executors.newFixedThreadPool(50);
-        this.neighbors = neighborsIn;
-        ServerThread serverThread = new ServerThread(getPortNumber(), this);
-        Broadcaster broadcasterThread = new Broadcaster();
-        PacketsThread packetsThread = new PacketsThread();
-        UpdateLocation updateThread = new UpdateLocation();
-        serverThread.setDaemon(true);
-        broadcasterThread.setDaemon(true);
-        packetsThread.setDaemon(true);
-        updateThread.setDaemon(true);
-        serverThread.start();
-        broadcasterThread.start();
-        packetsThread.start();
-        updateThread.start();
-    }
+//    public Car(int address, int portNumber, String hostname, double speed, double xCoordinate, double yCoordinate, ArrayList<Node> neighborsIn) {
+//        this.myID = address;
+//        this.portNumber = portNumber;
+//        this.speed = speed;
+//        this.hostname = hostname;
+//        this.xCoordinate = xCoordinate;
+//        this.yCoordinate = yCoordinate;
+//        cacheTable = new CacheTable();
+//        this.sequenceNumber = 0;
+//        packetsSent = 0;
+//        packetsLost = 0;
+//        myExecutor = Executors.newFixedThreadPool(50);
+//        this.neighbors = neighborsIn;
+//        this.ifInRoadTrain = false;
+//        ServerThread serverThread = new ServerThread(getPortNumber(), this);
+//        Broadcaster broadcasterThread = new Broadcaster();
+//        PacketsThread packetsThread = new PacketsThread();
+//        UpdateLocation updateThread = new UpdateLocation();
+//        serverThread.setDaemon(true);
+//        broadcasterThread.setDaemon(true);
+//        packetsThread.setDaemon(true);
+//        updateThread.setDaemon(true);
+//        serverThread.start();
+//        broadcasterThread.start();
+//        packetsThread.start();
+//        updateThread.start();
+//    }
 
     /**
      * Creates a car using a node as input
@@ -80,6 +82,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
         packetsSent = 0;
         packetsLost = 0;
         this.speed = 30.0;
+        this.ifInRoadTrain = false;
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = nodeIn.getLinks();
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
@@ -176,6 +179,16 @@ public class Car implements Vehicle, PacketAcknowledgement {
     }
 
     @Override
+    public void setIfInRoadTrain(boolean inRoadTrain) {
+        this.ifInRoadTrain = inRoadTrain;
+    }
+
+    @Override
+    public boolean getIfInRoadTrain() {
+        return ifInRoadTrain;
+    }
+
+    @Override
     public ArrayList<Node> getNeighbors() {
         return neighbors;
     }
@@ -229,21 +242,31 @@ public class Car implements Vehicle, PacketAcknowledgement {
             return (double) packetsLost / ((double) packetsLost + (double) packetsSent);
         }
     }
+
+    /**
+     * Increases packets lost
+     * @return current amount of packets lost
+     */
     public int increasePacketLost() {
         packetsLost++;
         return packetsLost;
     }
+
+    /**
+     * Increases packets sent
+     * @return current amount of packets sent
+     */
     public int increasePacketSent() {
         packetsSent++;
         return packetsSent;
     }
+    int receivePrintCounter = 0;
     /**
      * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
      * received by the server. Will take the packet and determine if should be retransmitted based on
      * the RBA algorithm.
      * @param packetIn - the packet received by the server
      */
-    int receivePrintCounter = 0;
     @Override
     public void receivePacket(DatagramPacket packetIn) {
         ByteArrayInputStream in = new ByteArrayInputStream(packetIn.getData());
@@ -264,6 +287,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
             e.getMessage();
         }
 
+        assert myPacket != null;
         int sequenceNum = myPacket.getSequenceNumber();
         int nodeID = this.getMyID();
         int sourceNodeID = myPacket.getId();
@@ -277,8 +301,9 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
         }
 
-        long currentTime = System.currentTimeMillis();
-        long latency = (long)(currentTime - myPacket.getCurrentTime());
+        long currentTime;
+        currentTime = System.currentTimeMillis();
+        long latency = currentTime - myPacket.getCurrentTime();
         if (receivePrintCounter == 100) {
             receivePrintCounter = 0;
             System.out.println("-----------------------------");
@@ -341,7 +366,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 int currentSN = increaseSequenceNumber();
                 //System.out.println("ID OF PACKET CREATOR: "+getId());
 
-                Packet newPacket = new Packet(currentSN, getHostname(), (int) getMyID(), (int) getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis());
+                Packet newPacket = new Packet(currentSN, getHostname(), (int) getMyID(), (int) getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis(), getIfInRoadTrain());
                 sendToNeighboringVehicles(newPacket);
                 try {
                     sleep(10);

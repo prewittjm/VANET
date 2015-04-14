@@ -1,4 +1,4 @@
-import java.util.Random;
+
 
 /**
  * Class that contains many of the calculations needed for this application.
@@ -170,7 +170,7 @@ public class Calculations {
      * @param id2 - id of second vehicle
      * @return True if collision between the coordinates has occurred, false otherwise
      */
-    public static boolean hasCollisionOccurredBetweenPoints(double x1, double y1, double x2, double y2, int id1, int id2) {
+    public static boolean hasCollisionOccurredBetweenTwoPoints(double x1, double y1, double x2, double y2, int id1, int id2) {
         double veh1XCoordinate = x1;
         double veh1YCoordinate = y1;
         double veh2XCoordinate = x2;
@@ -179,10 +179,10 @@ public class Calculations {
         double veh2HalfWidth = 3/2;
         double veh1HalfLength;
         double veh2HalfLength;
-        int veh1ToTheRight = 0;
-        int veh1ToTheTop = 0;
-        int veh2ToTheRight = 0;
-        int veh2ToTheTop = 0;
+        int veh1ToTheRight;
+        int veh1ToTheTop;
+        int veh2ToTheRight;
+        int veh2ToTheTop;
         int xIntersect = 0;
         int yIntersect = 0;
         if (id1 == 1) {
@@ -280,8 +280,7 @@ public class Calculations {
      * @return - True if the vehicles are close together
      */
     public static boolean isCloseToNeighboringVehicle(Vehicle veh1, Vehicle veh2) {
-        if ((distanceBetweenVehicles(veh1, veh2) <= 3.0)) return true;
-        else return false;
+        return (distanceBetweenVehicles(veh1, veh2) <= 3.0);
     }
 
     /**
@@ -293,7 +292,6 @@ public class Calculations {
      * @return - True if the points are close to each other
      */
     public static boolean isCloseToNeighboringPoints(double x1, double y1, double x2, double y2) {
-        if ((distanceBetweenPoints(x1, y1, x2, y2) <= 3.0)) return true;
-        else return false;
+        return (distanceBetweenPoints(x1, y1, x2, y2) <= 3.0);
     }
 }

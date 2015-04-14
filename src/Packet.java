@@ -13,6 +13,7 @@ public class Packet implements Serializable {
     private double speed, xCoordinate, yCoordinate;
     private String sourceNode;
     private long currentTime;
+    private Boolean inRoadTrain;
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
@@ -23,7 +24,7 @@ public class Packet implements Serializable {
      * @param xCoordinate - the current xCoordinate of the car sending the packet
      * @param yCoordinate - the current yCoordinate of the car sending the packet
      */
-    public Packet(int sequenceNumber, String sourceNode, int id, int previousHop, double speed, double xCoordinate, double yCoordinate, long currentTime) {
+    public Packet(int sequenceNumber, String sourceNode, int id, int previousHop, double speed, double xCoordinate, double yCoordinate, long currentTime, boolean inRoadTrain) {
         this.sequenceNumber = sequenceNumber;
         this.previousHop = previousHop;
         this.id = id;
@@ -32,6 +33,7 @@ public class Packet implements Serializable {
         this.yCoordinate = yCoordinate;
         this.sourceNode = sourceNode;
         this.currentTime = currentTime;
+        this.inRoadTrain = inRoadTrain;
     }
 
     /**
@@ -46,6 +48,7 @@ public class Packet implements Serializable {
         this.sequenceNumber = packetIn.getSequenceNumber();
         this.speed = packetIn.getSpeed();
         this.sourceNode = packetIn.getSourceNode();
+        this.inRoadTrain = packetIn.getIsInRoadTrain();
     }
     /**
      * Sets a new value for the previous hop
@@ -162,5 +165,21 @@ public class Packet implements Serializable {
      */
     public void setCurrentTime(long currentTime) {
         this.currentTime = currentTime;
+    }
+
+    /**
+     * Sets a new boolean if car/truck is in road train
+     * @param inRoadTrain - new value of the if the car/truck is in the road train
+     */
+    public void setInRoadTrain(boolean inRoadTrain) {
+        this.inRoadTrain = inRoadTrain;
+    }
+
+    /**
+     * Returns if the car/truck is in the road train
+     * @return boolean representing if the car/truck is in the road train
+     */
+    public boolean getIsInRoadTrain() {
+        return inRoadTrain;
     }
 }
