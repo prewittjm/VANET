@@ -7,9 +7,10 @@ import java.util.List;
  */
 public class Node {
     private int nodeID, portNumber;
-    private double xCoordinate, yCoordinate;
+    private double xCoordinate, yCoordinate, speed;
     private String hostname;
     private ArrayList<Node> links;
+    private boolean isInRoadTrain;
 
     /**
      * Constructor that creates a new Node. The node will be created when the config file is first read. This way it will be
@@ -28,6 +29,8 @@ public class Node {
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         links = new ArrayList<Node>();
+        isInRoadTrain = false;
+        speed = 0;
     }
 
     /**
@@ -110,6 +113,21 @@ public class Node {
         return nodeID;
     }
 
+    public boolean getIsInRoadTrain() {
+        return isInRoadTrain;
+    }
+
+    public void setInRoadTrain(boolean isInRoadTrain) {
+        this.isInRoadTrain = isInRoadTrain;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
     /**
      * Returns a boolean value answering if a new node can be added to the list of nodes
      * @param nodeIn - the new node wanting to be added

@@ -13,7 +13,7 @@ public class Packet implements Serializable {
     private double speed, xCoordinate, yCoordinate;
     private String sourceNode;
     private long currentTime;
-    private Boolean inRoadTrain;
+    private boolean inRoadTrain, attemptingToJoinTrain, canJoinTrain;
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
@@ -24,7 +24,11 @@ public class Packet implements Serializable {
      * @param xCoordinate - the current xCoordinate of the car sending the packet
      * @param yCoordinate - the current yCoordinate of the car sending the packet
      */
-    public Packet(int sequenceNumber, String sourceNode, int id, int previousHop, double speed, double xCoordinate, double yCoordinate, long currentTime, boolean inRoadTrain) {
+
+    //TODO: Create different packet types according to if the packet is an attempt to join a road train, a response to join a road train, etc.
+
+    public Packet(int sequenceNumber, String sourceNode, int id, int previousHop, double speed, double xCoordinate, double yCoordinate,
+                  long currentTime, boolean inRoadTrain, boolean attemptingToJoinTrain, boolean canJoinTrain) {
         this.sequenceNumber = sequenceNumber;
         this.previousHop = previousHop;
         this.id = id;
@@ -34,8 +38,11 @@ public class Packet implements Serializable {
         this.sourceNode = sourceNode;
         this.currentTime = currentTime;
         this.inRoadTrain = inRoadTrain;
+        this.attemptingToJoinTrain = attemptingToJoinTrain;
+        this.canJoinTrain = canJoinTrain;
     }
 
+    //
     /**
      * Constructor that sets the current packet to a packet already created
      * @param packetIn - packet coming in
@@ -49,6 +56,7 @@ public class Packet implements Serializable {
         this.speed = packetIn.getSpeed();
         this.sourceNode = packetIn.getSourceNode();
         this.inRoadTrain = packetIn.getIsInRoadTrain();
+
     }
     /**
      * Sets a new value for the previous hop
@@ -182,4 +190,29 @@ public class Packet implements Serializable {
     public boolean getIsInRoadTrain() {
         return inRoadTrain;
     }
+
+    /**
+     * Returns if the car/truck can join the road train
+     * @return boolean representing if the car/truck can join the road train
+     */
+    public boolean getCanJoinRoadTrain() {return canJoinTrain; }
+
+    /**
+     * Sets if the car/truck can join the road train
+     * @param canJoinTrain - the new value of canJoinRoadTrain
+     */
+    public void setCanJoinTrain(boolean canJoinTrain) {this.canJoinTrain = canJoinTrain; }
+
+    /**
+     * Returns if the car/truck is attempting to join the road train
+     * @return - boolean representing if the car can join the road train
+     */
+    public boolean getAttemptingToJoinTrain() {return attemptingToJoinTrain;}
+
+    /**
+     * Sets if the car/truck is attempting to join the road train
+     * @param attemptingToJoinTrain - the new value of the attemptingToJoinTrain
+     */
+    public void setAttemptingToJoinTrain(boolean attemptingToJoinTrain) {this.attemptingToJoinTrain = attemptingToJoinTrain;}
+
 }
