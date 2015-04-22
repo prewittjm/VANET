@@ -276,45 +276,56 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
             e.getMessage();
         }
         assert myPacket != null;
+        int packetType = 0;
+        packetType = myPacket.getPacketType();
         int sequenceNum = myPacket.getSequenceNumber();
-        int nodeID = this.getMyID();
         int sourceNodeID = myPacket.getId();
-        for (Node node: neighbors) {
-            if (node.getNodeID() == myPacket.getPreviousHop()) {
-                node.setxCoordinate(myPacket.getxCoordinate());
-                node.setyCoordinate(myPacket.getyCoordinate());
+        if (packetType == 1) {
+
+            int nodeID = this.getMyID();
+
+            for (Node node : neighbors) {
+                if (node.getNodeID() == myPacket.getPreviousHop()) {
+                    node.setxCoordinate(myPacket.getxCoordinate());
+                    node.setyCoordinate(myPacket.getyCoordinate());
 //        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
 //        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+                }
             }
-        }
-        long currentTime;
-        currentTime = System.currentTimeMillis();
-        long latency = currentTime - myPacket.getCurrentTime();
-        if (receivePrintCounter == 100) {
-            receivePrintCounter = 0;
-            System.out.println("-----------------------------");
-            System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
-                    + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
-                    + "\nLatency of this packet: " + latency);
-            System.out.println("-----------------------------");
-        }
-        else {
-            receivePrintCounter++;
-        }
-        if (nodeID != sourceNodeID){
-            int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
+            long currentTime;
+            currentTime = System.currentTimeMillis();
+            long latency = currentTime - myPacket.getCurrentTime();
+            if (receivePrintCounter == 100) {
+                receivePrintCounter = 0;
+                System.out.println("-----------------------------");
+                System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+                        + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+                        + "\nLatency of this packet: " + latency);
+                System.out.println("-----------------------------");
+            } else {
+                receivePrintCounter++;
+            }
+            if (nodeID != sourceNodeID) {
+                int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
 
-            if (cacheSequenceNum < sequenceNum) {
-                this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
-            }
-            else if (cacheSequenceNum == sequenceNum) {
-                int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
-                if (Calculations.retransmissionRate(broadcastNum)){
-                    sendToNeighboringVehicles(myPacket);
+                if (cacheSequenceNum < sequenceNum) {
+                    this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
+                } else if (cacheSequenceNum == sequenceNum) {
+                    int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
+                    if (Calculations.retransmissionRate(broadcastNum)) {
+                        sendToNeighboringVehicles(myPacket);
+                    }
                 }
             }
         }
+        else if (packetType == 2) {
 
+            //Allow the car to join
+        }
+        else if (packetType == 3) {
+
+            //Do nothing
+        }
     }
 
     /**
@@ -355,7 +366,7 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
             while (true) {
                 int currentSN = increaseSequenceNumber();
                 //System.out.println("ID OF PACKET CREATOR: "+ getMyID());
-                Packet newPacket = new Packet(currentSN, getHostname(), (int) this.getId(), (int) this.getId(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis(), getIfInRoadTrain());
+                Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), (int) this.getId(), (int) this.getId(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis(), 1);
                 sendToNeighboringVehicles(newPacket);
                 try {
                     sleep(10);

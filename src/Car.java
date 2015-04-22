@@ -286,51 +286,50 @@ public class Car implements Vehicle, PacketAcknowledgement {
         }
 
         assert myPacket != null;
-        boolean roadTrain = myPacket.getIsInRoadTrain();
-        if (roadTrain && !this.ifInRoadTrain) {
-            //Attempt to join train
-
-        }
-
-        else {
-            int sequenceNum = myPacket.getSequenceNumber();
-        int nodeID = this.getMyID();
+        int packetType = 0;
+        packetType = myPacket.getPacketType();
+        int sequenceNum = myPacket.getSequenceNumber();
         int sourceNodeID = myPacket.getId();
-        for (Node node : neighbors) {
-            if (node.getNodeID() == sourceNodeID) {
-
-                node.setxCoordinate(myPacket.getxCoordinate());
-                node.setyCoordinate(myPacket.getyCoordinate());
+        if ((packetType == 1) || (packetType == 2)) {
+            int nodeID = this.getMyID();
+            for (Node node : neighbors) {
+                if (node.getNodeID() == sourceNodeID) {
+                    node.setxCoordinate(myPacket.getxCoordinate());
+                    node.setyCoordinate(myPacket.getyCoordinate());
 //        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
 //        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+                }
             }
-        }
+            long currentTime;
+            currentTime = System.currentTimeMillis();
+            long latency = currentTime - myPacket.getCurrentTime();
+            if (receivePrintCounter == 100) {
+                receivePrintCounter = 0;
+                System.out.println("-----------------------------");
+                System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+                        + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+                        + "\nLatency of this packet: " + latency);
+            } else {
+                receivePrintCounter++;
+            }
+            if (nodeID != sourceNodeID) {
+                int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
 
-        long currentTime;
-        currentTime = System.currentTimeMillis();
-        long latency = currentTime - myPacket.getCurrentTime();
-        if (receivePrintCounter == 100) {
-            receivePrintCounter = 0;
-            System.out.println("-----------------------------");
-            System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
-                    + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
-                    + "\nLatency of this packet: " + latency);
-        } else {
-            receivePrintCounter++;
-        }
-        if (nodeID != sourceNodeID) {
-            int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
-
-            if (cacheSequenceNum < sequenceNum) {
-                this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
-            } else if (cacheSequenceNum == sequenceNum) {
-                int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
-                if (Calculations.retransmissionRate(broadcastNum)) {
-                    sendToNeighboringVehicles(myPacket);
+                if (cacheSequenceNum < sequenceNum) {
+                    this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
+                } else if (cacheSequenceNum == sequenceNum) {
+                    int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
+                    if (Calculations.retransmissionRate(broadcastNum)) {
+                        sendToNeighboringVehicles(myPacket);
+                    }
                 }
             }
         }
-    }
+        else if (packetType == 3) {
+
+            //Join Road Train
+
+        }
 
     }
     /**
@@ -370,8 +369,8 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 int currentSN = increaseSequenceNumber();
                 //System.out.println("ID OF PACKET CREATOR: "+getId());
 
-                Packet newPacket = new Packet(currentSN, getHostname(), (int) getMyID(), (int) getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(),
-                        System.currentTimeMillis(), getIfInRoadTrain(), false, false);
+                Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), (int) getMyID(), (int) getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(),
+                        System.currentTimeMillis(), 1);
                 sendToNeighboringVehicles(newPacket);
                 try {
                     sleep(10);
@@ -404,11 +403,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 System.out.println("*********************************************************************");
 
             }
-
-
         }
-
-
     }
     /*
      * This thread will update the location based on speed
@@ -435,5 +430,14 @@ public class Car implements Vehicle, PacketAcknowledgement {
         public void run() {
 
         }
+    }
+
+    private class sendRoadTrainRequest extends Thread {
+        @Override
+        public void run() {
+
+        }
+
+
     }
 }

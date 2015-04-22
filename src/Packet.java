@@ -13,7 +13,8 @@ public class Packet implements Serializable {
     private double speed, xCoordinate, yCoordinate;
     private String sourceNode;
     private long currentTime;
-    private boolean inRoadTrain, attemptingToJoinTrain, canJoinTrain;
+    private int packetType, portNumber;
+
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
@@ -23,12 +24,13 @@ public class Packet implements Serializable {
      * @param speed - the current speed of the car sending the packet
      * @param xCoordinate - the current xCoordinate of the car sending the packet
      * @param yCoordinate - the current yCoordinate of the car sending the packet
+     * @param packetType - the value of the packet
      */
 
-    //TODO: Create different packet types according to if the packet is an attempt to join a road train, a response to join a road train, etc.
 
-    public Packet(int sequenceNumber, String sourceNode, int id, int previousHop, double speed, double xCoordinate, double yCoordinate,
-                  long currentTime, boolean inRoadTrain, boolean attemptingToJoinTrain, boolean canJoinTrain) {
+
+    public Packet(int sequenceNumber, String sourceNode, int portNumber, int id, int previousHop, double speed, double xCoordinate, double yCoordinate,
+                  long currentTime, int packetType) {
         this.sequenceNumber = sequenceNumber;
         this.previousHop = previousHop;
         this.id = id;
@@ -37,9 +39,8 @@ public class Packet implements Serializable {
         this.yCoordinate = yCoordinate;
         this.sourceNode = sourceNode;
         this.currentTime = currentTime;
-        this.inRoadTrain = inRoadTrain;
-        this.attemptingToJoinTrain = attemptingToJoinTrain;
-        this.canJoinTrain = canJoinTrain;
+        this.packetType = packetType;
+        this.portNumber = portNumber;
     }
 
     //
@@ -55,8 +56,8 @@ public class Packet implements Serializable {
         this.sequenceNumber = packetIn.getSequenceNumber();
         this.speed = packetIn.getSpeed();
         this.sourceNode = packetIn.getSourceNode();
-        this.inRoadTrain = packetIn.getIsInRoadTrain();
-
+        this.packetType = packetIn.getPacketType();
+        this.portNumber = packetIn.getPortNumber();
     }
     /**
      * Sets a new value for the previous hop
@@ -176,43 +177,35 @@ public class Packet implements Serializable {
     }
 
     /**
-     * Sets a new boolean if car/truck is in road train
-     * @param inRoadTrain - new value of the if the car/truck is in the road train
+     * Returns the packet type. 1 if it is a regular packet sending coordinates, 2 if car is attempting to join road train, 3 if
+     * car is ok to join train
+     * @return - int representing the type of packet being sent
      */
-    public void setInRoadTrain(boolean inRoadTrain) {
-        this.inRoadTrain = inRoadTrain;
+    public int getPacketType() {
+        return packetType;
     }
 
     /**
-     * Returns if the car/truck is in the road train
-     * @return boolean representing if the car/truck is in the road train
+     * Sets a new value for the packet type
+     * @param packetType - the new value for the packet
      */
-    public boolean getIsInRoadTrain() {
-        return inRoadTrain;
+    public void setPacketType(int packetType) {
+        this.packetType = packetType;
     }
 
     /**
-     * Returns if the car/truck can join the road train
-     * @return boolean representing if the car/truck can join the road train
+     * Returns the portnumber of the node that sent this packet
+     * @return - portnumber of the node that sent this packet
      */
-    public boolean getCanJoinRoadTrain() {return canJoinTrain; }
+    public int getPortNumber() {
+        return portNumber;
+    }
 
     /**
-     * Sets if the car/truck can join the road train
-     * @param canJoinTrain - the new value of canJoinRoadTrain
+     * Sets a new portnumber of the node that sent this packet
+     * @param portNumber - new portnumber
      */
-    public void setCanJoinTrain(boolean canJoinTrain) {this.canJoinTrain = canJoinTrain; }
-
-    /**
-     * Returns if the car/truck is attempting to join the road train
-     * @return - boolean representing if the car can join the road train
-     */
-    public boolean getAttemptingToJoinTrain() {return attemptingToJoinTrain;}
-
-    /**
-     * Sets if the car/truck is attempting to join the road train
-     * @param attemptingToJoinTrain - the new value of the attemptingToJoinTrain
-     */
-    public void setAttemptingToJoinTrain(boolean attemptingToJoinTrain) {this.attemptingToJoinTrain = attemptingToJoinTrain;}
-
+    public void setPortNumber(int portNumber) {
+        this.portNumber = portNumber;
+    }
 }
