@@ -14,7 +14,6 @@ public class Packet implements Serializable {
     private String sourceNode;
     private long currentTime;
     private int packetType, portNumber;
-
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
@@ -26,9 +25,6 @@ public class Packet implements Serializable {
      * @param yCoordinate - the current yCoordinate of the car sending the packet
      * @param packetType - the value of the packet
      */
-
-
-
     public Packet(int sequenceNumber, String sourceNode, int portNumber, int id, int previousHop, double speed, double xCoordinate, double yCoordinate,
                   long currentTime, int packetType) {
         this.sequenceNumber = sequenceNumber;
@@ -42,7 +38,6 @@ public class Packet implements Serializable {
         this.packetType = packetType;
         this.portNumber = portNumber;
     }
-
     //
     /**
      * Constructor that sets the current packet to a packet already created
@@ -143,7 +138,6 @@ public class Packet implements Serializable {
     public int getId() {
         return id;
     }
-
     /**
      * Sets a new source node for the packet
      * @param sourceNode - the new source node of the packet
@@ -151,7 +145,6 @@ public class Packet implements Serializable {
     public void setSourceNode(String sourceNode) {
         this.sourceNode = sourceNode;
     }
-
     /**
      * Returns the source node of the packet
      * @return - String representing the source node of the packet
@@ -159,7 +152,6 @@ public class Packet implements Serializable {
     public String getSourceNode() {
         return sourceNode;
     }
-
     /**
      * Returns the current time in milliseconds
      * @return - long representing the current time
@@ -167,7 +159,6 @@ public class Packet implements Serializable {
     public long getCurrentTime() {
         return currentTime;
     }
-
     /**
      * Sets a new current time
      * @param currentTime - the new current time
@@ -175,7 +166,6 @@ public class Packet implements Serializable {
     public void setCurrentTime(long currentTime) {
         this.currentTime = currentTime;
     }
-
     /**
      * Returns the packet type. 1 if it is a regular packet sending coordinates, 2 if car is attempting to join road train, 3 if
      * car is ok to join train
@@ -184,7 +174,6 @@ public class Packet implements Serializable {
     public int getPacketType() {
         return packetType;
     }
-
     /**
      * Sets a new value for the packet type
      * @param packetType - the new value for the packet
@@ -192,7 +181,6 @@ public class Packet implements Serializable {
     public void setPacketType(int packetType) {
         this.packetType = packetType;
     }
-
     /**
      * Returns the portnumber of the node that sent this packet
      * @return - portnumber of the node that sent this packet
@@ -200,7 +188,6 @@ public class Packet implements Serializable {
     public int getPortNumber() {
         return portNumber;
     }
-
     /**
      * Sets a new portnumber of the node that sent this packet
      * @param portNumber - new portnumber

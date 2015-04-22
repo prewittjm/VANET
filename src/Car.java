@@ -27,6 +27,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private int packetsSent;
     private int packetsLost;
     private boolean ifInRoadTrain;
+    int receivePrintCounter = 0;
     //private PacketAcknowledgement packetAck;
 
     /**
@@ -89,14 +90,17 @@ public class Car implements Vehicle, PacketAcknowledgement {
         Broadcaster broadcasterThread = new Broadcaster();
         PacketsThread packetsThread = new PacketsThread();
         UpdateLocation updateThread = new UpdateLocation();
+        AttemptRoadTrainThread roadTrainThread = new AttemptRoadTrainThread();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
         packetsThread.setDaemon(true);
         updateThread.setDaemon(true);
+        roadTrainThread.setDaemon(true);
         serverThread.start();
         broadcasterThread.start();
         packetsThread.start();
         updateThread.start();
+        roadTrainThread.start();
     }
     @Override
     public void setxCoordinate(double xCoordinate) {
@@ -213,7 +217,6 @@ public class Car implements Vehicle, PacketAcknowledgement {
     public int getPacketsSent() {
         return packetsSent;
     }
-
     /**
      * Returns packets lost
      * @return - number of packets lost
@@ -221,7 +224,6 @@ public class Car implements Vehicle, PacketAcknowledgement {
     public int getPacketsLost() {
         return packetsLost;
     }
-
     /**
      * Returns total number of packets
      * @return - number of total packets
@@ -229,7 +231,6 @@ public class Car implements Vehicle, PacketAcknowledgement {
     public int getTotalNumberOfPackets() {
         return getPacketsLost() + getPacketsSent();
     }
-
     /**
      * Returns packet lost rate
      * @return - packet lost rate
@@ -242,7 +243,6 @@ public class Car implements Vehicle, PacketAcknowledgement {
             return (double) packetsLost / ((double) packetsLost + (double) packetsSent);
         }
     }
-
     /**
      * Increases packets lost
      * @return current amount of packets lost
@@ -251,7 +251,6 @@ public class Car implements Vehicle, PacketAcknowledgement {
         packetsLost++;
         return packetsLost;
     }
-
     /**
      * Increases packets sent
      * @return current amount of packets sent
@@ -260,7 +259,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
         packetsSent++;
         return packetsSent;
     }
-    int receivePrintCounter = 0;
+
     /**
      * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
      * received by the server. Will take the packet and determine if should be retransmitted based on
@@ -286,8 +285,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
         }
 
         assert myPacket != null;
-        int packetType = 0;
-        packetType = myPacket.getPacketType();
+        int packetType = myPacket.getPacketType();
         int sequenceNum = myPacket.getSequenceNumber();
         int sourceNodeID = myPacket.getId();
         if ((packetType == 1) || (packetType == 2)) {
@@ -326,7 +324,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
         }
         else if (packetType == 3) {
-
+            setIfInRoadTrain(true);
             //Join Road Train
 
         }
@@ -369,7 +367,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 int currentSN = increaseSequenceNumber();
                 //System.out.println("ID OF PACKET CREATOR: "+getId());
 
-                Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), (int) getMyID(), (int) getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(),
+                Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), getMyID(), getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(),
                         System.currentTimeMillis(), 1);
                 sendToNeighboringVehicles(newPacket);
                 try {
@@ -425,9 +423,22 @@ public class Car implements Vehicle, PacketAcknowledgement {
 
     }
 
-    private class AttemptRoadTrain extends Thread {
+    private class AttemptRoadTrainThread extends Thread {
         @Override
         public void run() {
+            System.out.println("Road Train Packet Sent");
+            while (!ifInRoadTrain) {
+                int currentSN = increaseSequenceNumber();
+                Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), getMyID(), getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(),
+                        System.currentTimeMillis(), 2);
+                sendToNeighboringVehicles(newPacket);
+                try {
+                    sleep(1000);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
 
         }
     }
