@@ -260,6 +260,46 @@ public class Car implements Vehicle, PacketAcknowledgement {
         return packetsSent;
     }
 
+    public void decelerate(double distanceRequired) {
+
+    }
+
+    public void accelerate(double distanceRequired) {
+
+    }
+
+    public boolean joinRoadTrain() {
+        Node nodeToGetBehind = null;
+        double distance = Double.MAX_VALUE;
+        boolean plausibleNode = false;
+        for (Node node : neighbors) {
+           Double newDistance = Calculations.distanceBetweenPoints(getxCoordinate(),getyCoordinate(),node.getxCoordinate(),node.getyCoordinate());
+            if (getxCoordinate() < node.getxCoordinate() && newDistance < distance) {
+                distance = newDistance;
+                nodeToGetBehind = node;
+                plausibleNode = true;
+            }
+            if (getxCoordinate() > node.getxCoordinate() && !plausibleNode) {
+                nodeToGetBehind = node;
+            }
+        }
+        if (plausibleNode) {
+            if (getyCoordinate() != nodeToGetBehind.getyCoordinate()) {
+                this.setyCoordinate(nodeToGetBehind.getyCoordinate());
+            }
+
+            if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) < 5.0) {
+                decelerate(30.0);
+            } else if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) > 30.0) {
+                accelerate(30.0);
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     /**
      * Overriden method from the PacketAcknowledgement Interface. Will be called every time a packed is
      * received by the server. Will take the packet and determine if should be retransmitted based on
@@ -288,6 +328,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
         int packetType = myPacket.getPacketType();
         int sequenceNum = myPacket.getSequenceNumber();
         int sourceNodeID = myPacket.getId();
+
         if ((packetType == 1) || (packetType == 2)) {
             int nodeID = this.getMyID();
             for (Node node : neighbors) {
@@ -323,10 +364,12 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 }
             }
         }
+        else if (packetType == 4) {
+            //Process packet and change the neighbor node if it is in the roadtrain
+        }
         else if (packetType == 3) {
-            setIfInRoadTrain(true);
             //Join Road Train
-
+            setIfInRoadTrain(true);
         }
 
     }

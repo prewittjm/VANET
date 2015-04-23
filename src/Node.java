@@ -30,7 +30,7 @@ public class Node {
         this.yCoordinate = yCoordinate;
         links = new ArrayList<Node>();
         isInRoadTrain = false;
-        speed = 0;
+        speed = 30;
     }
 
     /**
@@ -113,18 +113,34 @@ public class Node {
         return nodeID;
     }
 
+    /**
+     * Returns if the car is in the roadtrain. True if the car is in the roadtrain, false if not
+     * @return boolean value representing if the car is in the roadtrain
+     */
     public boolean getIsInRoadTrain() {
         return isInRoadTrain;
     }
 
+    /**
+     * Sets a new boolean value for if the car is in or out of the roadtrain
+     * @param isInRoadTrain - the new boolean value for if the car is in the raodtrain
+     */
     public void setInRoadTrain(boolean isInRoadTrain) {
         this.isInRoadTrain = isInRoadTrain;
     }
 
+    /**
+     * Returns the speed of the node
+     * @return - the speed of the car as a double
+     */
     public double getSpeed() {
         return speed;
     }
 
+    /**
+     * Sets a new speed for the node
+     * @param speed - the new speed of the node
+     */
     public void setSpeed(double speed) {
         this.speed = speed;
     }
@@ -152,9 +168,15 @@ public class Node {
     public boolean removeLink(Node nodeIn) {
         return links.remove(nodeIn);
     }
+
+    /**
+     * Returns an ArrayList of nodes
+     * @return - the current ArrayList of nodes
+     */
     public ArrayList<Node> getLinks() {
         return links;
     }
+
     /**
      * Overrides the toString class so a String can be returned
      * @return String representing the Node

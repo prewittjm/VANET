@@ -37,6 +37,15 @@ public class Calculations {
     }
 
     /**
+     * Returns the distance between the x's
+     * @param x1 - value of the first x
+     * @param x2 - value of the second x
+     * @return double representing the distance between the two x's
+     */
+    public static double distanceBetweenX (double x1, double x2) {
+        return x1 - x2;
+    }
+    /**
      * Returns boolean whether the packet can be sent or not.
      * @param veh1 - Vehicle 1
      * @param veh2 - Vehicle 2
