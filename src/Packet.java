@@ -14,6 +14,7 @@ public class Packet implements Serializable {
     private String sourceNode;
     private long currentTime;
     private int packetType, portNumber;
+
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
@@ -38,7 +39,7 @@ public class Packet implements Serializable {
         this.packetType = packetType;
         this.portNumber = portNumber;
     }
-    //
+
     /**
      * Constructor that sets the current packet to a packet already created
      * @param packetIn - packet coming in

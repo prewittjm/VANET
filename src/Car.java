@@ -259,15 +259,38 @@ public class Car implements Vehicle, PacketAcknowledgement {
         packetsSent++;
         return packetsSent;
     }
-
-    public void decelerate(double distanceRequired) {
+    /**
+     * Decelerates the car in order to fit into the road train
+     * @param distanceRequired - the distance required between this car and the car in front of it
+     * @param nodeToFollow - the car this car wants to follow
+     */
+    public void decelerate(double distanceRequired, Node nodeToFollow) {
+        double currentDistanceAway = Calculations.distanceBetweenPoints(getxCoordinate(),getyCoordinate(),nodeToFollow.getxCoordinate(),nodeToFollow.getyCoordinate());
+        while (currentDistanceAway < distanceRequired) {
+            setSpeed(this.speed--);
+        }
+        setSpeed(30.0);
 
     }
-
-    public void accelerate(double distanceRequired) {
-
+    /**
+     * Accelerates the car in order to fit into the road train
+     * @param distanceRequired - the distance required between this car and the car in front of it
+     * @param nodeToFollow - the car this car wants to follow
+     */
+    public void accelerate(double distanceRequired, Node nodeToFollow) {
+        double currentDistanceAway = Calculations.distanceBetweenPoints(getxCoordinate(),getyCoordinate(),nodeToFollow.getxCoordinate(),nodeToFollow.getyCoordinate());
+        while (currentDistanceAway > distanceRequired) {
+            setSpeed(this.speed++);
+        }
+        setSpeed(30.0);
     }
 
+    /**
+     * The function that ultimately joins this car into the road train. Will go through each neighbor to determine the
+     * car/truck that is optimal to follow in the road train. Tests to see if the car is in front or behind then
+     * figures out if the car in front is already in the roadtrain. If not then it will not attempt to join.
+     * @return - true if able to join the train, false if not
+     */
     public boolean joinRoadTrain() {
         Node nodeToGetBehind = null;
         double distance = Double.MAX_VALUE;
@@ -283,15 +306,16 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 nodeToGetBehind = node;
             }
         }
-        if (plausibleNode) {
+        if (plausibleNode && nodeToGetBehind.getIsInRoadTrain()) {
             if (getyCoordinate() != nodeToGetBehind.getyCoordinate()) {
                 this.setyCoordinate(nodeToGetBehind.getyCoordinate());
             }
 
-            if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) < 5.0) {
-                decelerate(30.0);
+            if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) < 30.0) {
+                decelerate(30.0, nodeToGetBehind);
+
             } else if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) > 30.0) {
-                accelerate(30.0);
+                accelerate(30.0, nodeToGetBehind);
             }
             return true;
         }
@@ -365,11 +389,83 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
         }
         else if (packetType == 4) {
-            //Process packet and change the neighbor node if it is in the roadtrain
+            int nodeID = this.getMyID();
+            for (Node node : neighbors) {
+                if (node.getNodeID() == sourceNodeID) {
+                    node.setxCoordinate(myPacket.getxCoordinate());
+                    node.setyCoordinate(myPacket.getyCoordinate());
+                    if (!node.getIsInRoadTrain()){
+                        node.setInRoadTrain(true);
+                    }
+//        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
+//        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+                }
+            }
+            long currentTime;
+            currentTime = System.currentTimeMillis();
+            long latency = currentTime - myPacket.getCurrentTime();
+            if (receivePrintCounter == 100) {
+                receivePrintCounter = 0;
+                System.out.println("-----------------------------");
+                System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+                        + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+                        + "\nLatency of this packet: " + latency);
+            } else {
+                receivePrintCounter++;
+            }
+            if (nodeID != sourceNodeID) {
+                int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
+
+                if (cacheSequenceNum < sequenceNum) {
+                    this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
+                } else if (cacheSequenceNum == sequenceNum) {
+                    int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
+                    if (Calculations.retransmissionRate(broadcastNum)) {
+                        sendToNeighboringVehicles(myPacket);
+                    }
+                }
+            }
         }
+
         else if (packetType == 3) {
-            //Join Road Train
-            setIfInRoadTrain(true);
+            if (!this.ifInRoadTrain) {
+                setIfInRoadTrain(true);
+            }
+            else {
+                int nodeID = this.getMyID();
+                for (Node node : neighbors) {
+                    if (node.getNodeID() == sourceNodeID) {
+                        node.setxCoordinate(myPacket.getxCoordinate());
+                        node.setyCoordinate(myPacket.getyCoordinate());
+//        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
+//        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+                    }
+                }
+                long currentTime;
+                currentTime = System.currentTimeMillis();
+                long latency = currentTime - myPacket.getCurrentTime();
+                if (receivePrintCounter == 100) {
+                    receivePrintCounter = 0;
+                    System.out.println("-----------------------------");
+                    System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+                            + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+                            + "\nLatency of this packet: " + latency);
+                } else {
+                    receivePrintCounter++;
+                }
+                if (nodeID != sourceNodeID) {
+                    int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
+
+                    if (cacheSequenceNum < sequenceNum) {
+                        this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
+                    } else if (cacheSequenceNum == sequenceNum) {
+                        int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
+                        if (Calculations.retransmissionRate(broadcastNum)) {
+                            sendToNeighboringVehicles(myPacket);
+                        }
+                    }
+                }
+            }
         }
 
     }
@@ -409,10 +505,16 @@ public class Car implements Vehicle, PacketAcknowledgement {
             while (true) {
                 int currentSN = increaseSequenceNumber();
                 //System.out.println("ID OF PACKET CREATOR: "+getId());
-
-                Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), getMyID(), getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(),
-                        System.currentTimeMillis(), 1);
-                sendToNeighboringVehicles(newPacket);
+                if (!ifInRoadTrain) {
+                    Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), getMyID(), getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(),
+                            System.currentTimeMillis(), 1);
+                    sendToNeighboringVehicles(newPacket);
+                }
+                else {
+                    Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), getMyID(), getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(),
+                            System.currentTimeMillis(), 1);
+                    sendToNeighboringVehicles(newPacket);
+                }
                 try {
                     sleep(10);
                 }
@@ -422,7 +524,6 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
         }
     }
-
     /**
      * This thread will print out total packets lost, packets sent from this node, and packet lost rate.
      */
@@ -446,7 +547,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
         }
     }
-    /*
+    /**
      * This thread will update the location based on speed
      */
     private class UpdateLocation extends Thread {
@@ -465,7 +566,9 @@ public class Car implements Vehicle, PacketAcknowledgement {
         }
 
     }
-
+    /**
+     * Thread that attempts to join the road train every second
+     */
     private class AttemptRoadTrainThread extends Thread {
         @Override
         public void run() {
@@ -484,14 +587,5 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
 
         }
-    }
-
-    private class sendRoadTrainRequest extends Thread {
-        @Override
-        public void run() {
-
-        }
-
-
     }
 }
