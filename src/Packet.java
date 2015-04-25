@@ -13,7 +13,7 @@ public class Packet implements Serializable {
     private double speed, xCoordinate, yCoordinate;
     private String sourceNode;
     private long currentTime;
-    private int packetType, portNumber;
+    private int packetType, portNumber, idTo;
 
     /**
      * Constructor to be used to make a packet.
@@ -38,8 +38,22 @@ public class Packet implements Serializable {
         this.currentTime = currentTime;
         this.packetType = packetType;
         this.portNumber = portNumber;
+        idTo = 0;
     }
-
+    public Packet(int sequenceNumber, String sourceNode, int portNumber, int id, int previousHop, double speed, double xCoordinate, double yCoordinate,
+                  long currentTime, int packetType, int idTo) {
+        this.sequenceNumber = sequenceNumber;
+        this.previousHop = previousHop;
+        this.id = id;
+        this.speed = speed;
+        this.xCoordinate = xCoordinate;
+        this.yCoordinate = yCoordinate;
+        this.sourceNode = sourceNode;
+        this.currentTime = currentTime;
+        this.packetType = packetType;
+        this.portNumber = portNumber;
+        this.idTo = idTo;
+    }
     /**
      * Constructor that sets the current packet to a packet already created
      * @param packetIn - packet coming in
@@ -54,6 +68,8 @@ public class Packet implements Serializable {
         this.sourceNode = packetIn.getSourceNode();
         this.packetType = packetIn.getPacketType();
         this.portNumber = packetIn.getPortNumber();
+        this.idTo = packetIn.getIdTo();
+        this.packetType = packetIn.getPacketType();
     }
     /**
      * Sets a new value for the previous hop
@@ -195,5 +211,19 @@ public class Packet implements Serializable {
      */
     public void setPortNumber(int portNumber) {
         this.portNumber = portNumber;
+    }
+    /**
+     * Returns the id of the node that
+     * @return - the id of the node the packe is meant for
+     */
+    public int getIdTo() {
+        return idTo;
+    }
+    /**
+     * Sets a new id to send to
+     * @param idTo - the new id
+     */
+    public void setIdTo(int idTo) {
+        this.idTo = idTo;
     }
 }

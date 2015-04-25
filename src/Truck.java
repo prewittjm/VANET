@@ -221,6 +221,87 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         return packetsLost;
     }
 
+
+    public void processPacket(Packet packetIn, int sequenceNumberIn, int sourceNodeIDIn) {
+
+        int nodeID = this.getMyID();
+
+        for (Node node : neighbors) {
+            if (node.getNodeID() == packetIn.getPreviousHop()) {
+                node.setxCoordinate(packetIn.getxCoordinate());
+                node.setyCoordinate(packetIn.getyCoordinate());
+//        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
+//        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+            }
+        }
+        long currentTime;
+        currentTime = System.currentTimeMillis();
+        long latency = currentTime - packetIn.getCurrentTime();
+        if (receivePrintCounter == 100) {
+            receivePrintCounter = 0;
+            System.out.println("-----------------------------");
+            System.out.println("Received packet from: " + packetIn.getPreviousHop() + "\nWith source: " + packetIn.getSourceNode()
+                    + "\nSequence Number: " + packetIn.getSequenceNumber() + "\nCoordinates - x: " + packetIn.getxCoordinate() + " y: " + packetIn.getyCoordinate()
+                    + "\nLatency of this packet: " + latency);
+            System.out.println("-----------------------------");
+        } else {
+            receivePrintCounter++;
+        }
+        if (nodeID != sourceNodeIDIn) {
+            int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeIDIn));
+
+            if (cacheSequenceNum < sequenceNumberIn) {
+                this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeIDIn), sequenceNumberIn);
+            } else if (cacheSequenceNum == sequenceNumberIn) {
+                int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeIDIn)));
+                if (Calculations.retransmissionRate(broadcastNum)) {
+                    sendToNeighboringVehicles(packetIn);
+                }
+            }
+        }
+    }
+
+
+    public void processPacketWRoadtrain(Packet packetIn, int sequenceNumberIn, int sourceNodeIDIn) {
+        int nodeID = this.getMyID();
+
+        for (Node node : neighbors) {
+            if (node.getNodeID() == packetIn.getPreviousHop()) {
+                node.setxCoordinate(packetIn.getxCoordinate());
+                node.setyCoordinate(packetIn.getyCoordinate());
+//        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
+//        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+                if (!node.getIsInRoadTrain()){
+                    node.setInRoadTrain(true);
+                }
+            }
+        }
+        long currentTime;
+        currentTime = System.currentTimeMillis();
+        long latency = currentTime - packetIn.getCurrentTime();
+        if (receivePrintCounter == 100) {
+            receivePrintCounter = 0;
+            System.out.println("-----------------------------");
+            System.out.println("Received packet from: " + packetIn.getPreviousHop() + "\nWith source: " + packetIn.getSourceNode()
+                    + "\nSequence Number: " + packetIn.getSequenceNumber() + "\nCoordinates - x: " + packetIn.getxCoordinate() + " y: " + packetIn.getyCoordinate()
+                    + "\nLatency of this packet: " + latency);
+            System.out.println("-----------------------------");
+        } else {
+            receivePrintCounter++;
+        }
+        if (nodeID != sourceNodeIDIn) {
+            int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeIDIn));
+
+            if (cacheSequenceNum < sequenceNumberIn) {
+                this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeIDIn), sequenceNumberIn);
+            } else if (cacheSequenceNum == sequenceNumberIn) {
+                int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeIDIn)));
+                if (Calculations.retransmissionRate(broadcastNum)) {
+                    sendToNeighboringVehicles(packetIn);
+                }
+            }
+        }
+    }
     /**
      * Returns total number of packets
      * @return - number of total packets
@@ -282,90 +363,126 @@ public class Truck implements Vehicle, PacketAcknowledgement  {
         int sourceNodeID = myPacket.getId();
 
         if (packetType == 1 || packetType == 3) {
-
-            int nodeID = this.getMyID();
-
-            for (Node node : neighbors) {
-                if (node.getNodeID() == myPacket.getPreviousHop()) {
-                    node.setxCoordinate(myPacket.getxCoordinate());
-                    node.setyCoordinate(myPacket.getyCoordinate());
-//        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
-//        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
-                }
-            }
-            long currentTime;
-            currentTime = System.currentTimeMillis();
-            long latency = currentTime - myPacket.getCurrentTime();
-            if (receivePrintCounter == 100) {
-                receivePrintCounter = 0;
-                System.out.println("-----------------------------");
-                System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
-                        + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
-                        + "\nLatency of this packet: " + latency);
-                System.out.println("-----------------------------");
-            } else {
-                receivePrintCounter++;
-            }
-            if (nodeID != sourceNodeID) {
-                int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
-
-                if (cacheSequenceNum < sequenceNum) {
-                    this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
-                } else if (cacheSequenceNum == sequenceNum) {
-                    int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
-                    if (Calculations.retransmissionRate(broadcastNum)) {
-                        sendToNeighboringVehicles(myPacket);
-                    }
-                }
-            }
+            processPacket(myPacket, sequenceNum, sourceNodeID);
+//            int nodeID = this.getMyID();
+//
+//            for (Node node : neighbors) {
+//                if (node.getNodeID() == myPacket.getPreviousHop()) {
+//                    node.setxCoordinate(myPacket.getxCoordinate());
+//                    node.setyCoordinate(myPacket.getyCoordinate());
+////        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
+////        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+//                }
+//            }
+//            long currentTime;
+//            currentTime = System.currentTimeMillis();
+//            long latency = currentTime - myPacket.getCurrentTime();
+//            if (receivePrintCounter == 100) {
+//                receivePrintCounter = 0;
+//                System.out.println("-----------------------------");
+//                System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+//                        + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+//                        + "\nLatency of this packet: " + latency);
+//                System.out.println("-----------------------------");
+//            } else {
+//                receivePrintCounter++;
+//            }
+//            if (nodeID != sourceNodeID) {
+//                int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
+//
+//                if (cacheSequenceNum < sequenceNum) {
+//                    this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
+//                } else if (cacheSequenceNum == sequenceNum) {
+//                    int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
+//                    if (Calculations.retransmissionRate(broadcastNum)) {
+//                        sendToNeighboringVehicles(myPacket);
+//                    }
+//                }
+//            }
         }
         else if (packetType == 2) {
+//            int nodeID = this.getMyID();
+//
+//            for (Node node : neighbors) {
+//                if (node.getNodeID() == myPacket.getPreviousHop()) {
+//                    node.setxCoordinate(myPacket.getxCoordinate());
+//                    node.setyCoordinate(myPacket.getyCoordinate());
+////        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
+////        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+//                }
+//            }
+//            long currentTime;
+//            currentTime = System.currentTimeMillis();
+//            long latency = currentTime - myPacket.getCurrentTime();
+//            if (receivePrintCounter == 100) {
+//                receivePrintCounter = 0;
+//                System.out.println("-----------------------------");
+//                System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+//                        + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+//                        + "\nLatency of this packet: " + latency);
+//                System.out.println("-----------------------------");
+//            } else {
+//                receivePrintCounter++;
+//            }
+//            if (nodeID != sourceNodeID) {
+//                int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
+//
+//                if (cacheSequenceNum < sequenceNum) {
+//                    this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
+//                } else if (cacheSequenceNum == sequenceNum) {
+//                    int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
+//                    if (Calculations.retransmissionRate(broadcastNum)) {
+//                        sendToNeighboringVehicles(myPacket);
+//                    }
+//                }
+//            }
+            processPacket(myPacket, sequenceNum, sourceNodeID);
             int currentSN = increaseSequenceNumber();
-            //System.out.println("ID OF PACKET CREATOR: "+ getMyID());
-            Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), getMyID(), getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis(), 3);
+            Packet newPacket = new Packet(currentSN, getHostname(), getPortNumber(), getMyID(), getMyID(), getSpeed(), getxCoordinate(), getyCoordinate(), System.currentTimeMillis(), 3, sourceNodeID);
             sendToNeighboringVehicles(newPacket);
         }
         else if (packetType == 4) {
-            int nodeID = this.getMyID();
-
-            for (Node node : neighbors) {
-                if (node.getNodeID() == myPacket.getPreviousHop()) {
-                    node.setxCoordinate(myPacket.getxCoordinate());
-                    node.setyCoordinate(myPacket.getyCoordinate());
-                    if (!node.getIsInRoadTrain()){
-                        node.setInRoadTrain(true);
-                    }
-//        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
-//        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
-                }
-            }
-            long currentTime;
-            currentTime = System.currentTimeMillis();
-            long latency = currentTime - myPacket.getCurrentTime();
-            if (receivePrintCounter == 100) {
-                receivePrintCounter = 0;
-                System.out.println("-----------------------------");
-                System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
-                        + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
-                        + "\nLatency of this packet: " + latency);
-                System.out.println("-----------------------------");
-            } else {
-                receivePrintCounter++;
-            }
-            if (nodeID != sourceNodeID) {
-                int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
-
-                if (cacheSequenceNum < sequenceNum) {
-                    this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
-                } else if (cacheSequenceNum == sequenceNum) {
-                    int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
-                    if (Calculations.retransmissionRate(broadcastNum)) {
-                        sendToNeighboringVehicles(myPacket);
-                    }
-                }
-            }
-
-        }
+            processPacketWRoadtrain(myPacket, sequenceNum, sourceNodeID);
+//            int nodeID = this.getMyID();
+//
+//            for (Node node : neighbors) {
+//                if (node.getNodeID() == myPacket.getPreviousHop()) {
+//                    node.setxCoordinate(myPacket.getxCoordinate());
+//                    node.setyCoordinate(myPacket.getyCoordinate());
+//                    if (!node.getIsInRoadTrain()){
+//                        node.setInRoadTrain(true);
+//                    }
+////        		System.out.println("*****UPDATED NODE " + sourceNodeID + "*****\n" +
+////        				"X: " + node.getxCoordinate()+"\nY: " + node.getyCoordinate());
+//                }
+//            }
+//            long currentTime;
+//            currentTime = System.currentTimeMillis();
+//            long latency = currentTime - myPacket.getCurrentTime();
+//            if (receivePrintCounter == 100) {
+//                receivePrintCounter = 0;
+//                System.out.println("-----------------------------");
+//                System.out.println("Received packet from: " + myPacket.getPreviousHop() + "\nWith source: " + myPacket.getSourceNode()
+//                        + "\nSequence Number: " + myPacket.getSequenceNumber() + "\nCoordinates - x: " + myPacket.getxCoordinate() + " y: " + myPacket.getyCoordinate()
+//                        + "\nLatency of this packet: " + latency);
+//                System.out.println("-----------------------------");
+//            } else {
+//                receivePrintCounter++;
+//            }
+//            if (nodeID != sourceNodeID) {
+//                int cacheSequenceNum = this.cacheTable.checkForSequenceNumber(Integer.toString(sourceNodeID));
+//
+//                if (cacheSequenceNum < sequenceNum) {
+//                    this.cacheTable.addNewEntryToTable(Integer.toString(sourceNodeID), sequenceNum);
+//                } else if (cacheSequenceNum == sequenceNum) {
+//                    int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeID)));
+//                    if (Calculations.retransmissionRate(broadcastNum)) {
+//                        sendToNeighboringVehicles(myPacket);
+//                    }
+//                }
+//            }
+//
+     }
     }
 
     /**
