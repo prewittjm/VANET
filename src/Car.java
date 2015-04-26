@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,13 +20,14 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private String hostname;
     private double speed, xCoordinate, yCoordinate;
     private ArrayList<Node> neighbors;
+    private ArrayList<Node> biDirectionalLinks;
+    private ArrayList<Node> receivedHelloFrom;
     private double length = 5.0;
     private double width = 3.0;
     private CacheTable cacheTable;
     private ExecutorService myExecutor;
-    private int sequenceNumber;
-    private int packetsSent;
-    private int packetsLost;
+    private int sequenceNumber, helloSequenceNum, packetsLost, packetsSent;
+
     private boolean ifInRoadTrain;
     int receivePrintCounter = 0;
     //private PacketAcknowledgement packetAck;
@@ -80,10 +82,13 @@ public class Car implements Vehicle, PacketAcknowledgement {
         this.hostname = nodeIn.getHostname();
         cacheTable = new CacheTable();
         this.sequenceNumber = 0;
+        this.helloSequenceNum = 0;
         packetsSent = 0;
         packetsLost = 0;
         this.speed = 30.0;
         this.ifInRoadTrain = false;
+        this.biDirectionalLinks = new ArrayList<Node>();
+        this.receivedHelloFrom = new ArrayList<Node>();
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = nodeIn.getLinks();
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
@@ -259,6 +264,14 @@ public class Car implements Vehicle, PacketAcknowledgement {
         packetsSent++;
         return packetsSent;
     }
+    /**
+     * Increases the sequence number of the hello packets
+     * @return - the current sequence number of the hello packet
+     */
+    public int increaseHelloSeqNum() {
+        helloSequenceNum ++;
+        return helloSequenceNum;
+    }
 
     public void processPacket(Packet packetIn, int sequenceNumberIn, int sourceNodeIDIn) {
 
@@ -298,6 +311,24 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
         }
     }
+
+    public void processHelloPacket() {
+
+
+
+
+    }
+
+    public void setUpMPRs() {
+
+
+
+
+
+
+    }
+
+
 
     public void processPacketWRoadtrain(Packet packetIn, int sequenceNumberIn, int sourceNodeIDIn) {
         int nodeID = this.getMyID();
@@ -340,7 +371,10 @@ public class Car implements Vehicle, PacketAcknowledgement {
         }
     }
 
+    public void processHelloPacket(Packet packetIn) {
 
+
+    }
 
     /**
      * Decelerates the car in order to fit into the road train
@@ -406,11 +440,11 @@ public class Car implements Vehicle, PacketAcknowledgement {
                 this.setyCoordinate(nodeToGetBehind.getyCoordinate());
             }
 
-            if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) < 30.0) {
+            if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) < 10.0) {
                 decelerate(30.0, nodeToGetBehind);
                 this.setIfInRoadTrain(true);
 
-            } else if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) > 30.0) {
+            } else if (Calculations.distanceBetweenX(getxCoordinate(), nodeToGetBehind.getxCoordinate()) > 20.0) {
                 accelerate(30.0, nodeToGetBehind);
                 this.setIfInRoadTrain(true);
             }
@@ -447,6 +481,7 @@ public class Car implements Vehicle, PacketAcknowledgement {
 
         assert myPacket != null;
         int packetType = myPacket.getPacketType();
+
         int sequenceNum = myPacket.getSequenceNumber();
         int sourceNodeID = myPacket.getId();
         int toNodeID = myPacket.getIdTo();
@@ -686,5 +721,18 @@ public class Car implements Vehicle, PacketAcknowledgement {
             }
 
         }
+    }
+
+    private class HelloPacketBroadcast extends Thread {
+        @Override
+        public void run() {
+
+
+
+
+
+        }
+
+
     }
 }

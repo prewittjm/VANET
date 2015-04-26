@@ -4,17 +4,18 @@
  */
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * This class will take different parts of the packet and serialize them into bytes that can then be sent over UDP.
  */
 public class Packet implements Serializable {
-    private int sequenceNumber, id, previousHop;
+    private int sequenceNumber, id, previousHop, packetType, portNumber, idTo;
     private double speed, xCoordinate, yCoordinate;
     private String sourceNode;
     private long currentTime;
-    private int packetType, portNumber, idTo;
-
+    private ArrayList<Node> biDirectionalLinks;
+    private ArrayList<Node> receivedHelloFrom;
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
@@ -40,6 +41,19 @@ public class Packet implements Serializable {
         this.portNumber = portNumber;
         idTo = 0;
     }
+    /**
+     *
+     * Constructor to be used to make a packet.
+     * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
+     * @param sourceNode - the source hostname of the packet
+     * @param id - the source id of the packet. Used to know where the packet came from.
+     * @param previousHop - the previous node the packet came from. May be the same as source address.
+     * @param speed - the current speed of the car sending the packet
+     * @param xCoordinate - the current xCoordinate of the car sending the packet
+     * @param yCoordinate - the current yCoordinate of the car sending the packet
+     * @param packetType - the value of the packet
+     * @param idTo - the node the packet is intended for
+     */
     public Packet(int sequenceNumber, String sourceNode, int portNumber, int id, int previousHop, double speed, double xCoordinate, double yCoordinate,
                   long currentTime, int packetType, int idTo) {
         this.sequenceNumber = sequenceNumber;
@@ -53,6 +67,16 @@ public class Packet implements Serializable {
         this.packetType = packetType;
         this.portNumber = portNumber;
         this.idTo = idTo;
+    }
+    /**
+     * The HELLO packet used to set up the MPRs
+     * @param biDirectionalLinks - list of addresses of the neighbors which there exists a bi-directional link
+     * @param receivedHelloFrom - the list of addresses of the neighbors which are heard by this node (a HELLO has been received)
+     */
+    public Packet(ArrayList<Node> biDirectionalLinks, ArrayList<Node> receivedHelloFrom) {
+        this.biDirectionalLinks = biDirectionalLinks;
+        this.receivedHelloFrom = receivedHelloFrom;
+        packetType = 0;
     }
     /**
      * Constructor that sets the current packet to a packet already created
@@ -225,5 +249,21 @@ public class Packet implements Serializable {
      */
     public void setIdTo(int idTo) {
         this.idTo = idTo;
+    }
+
+    public ArrayList<Node> getBiDirectionalLinks() {
+        return biDirectionalLinks;
+    }
+
+    public ArrayList<Node> getReceivedHelloFrom() {
+        return receivedHelloFrom;
+    }
+
+    public void setBiDirectionalLinks(ArrayList<Node> biDirectionalLinks) {
+        this.biDirectionalLinks = biDirectionalLinks;
+    }
+
+    public void setReceivedHelloFrom(ArrayList<Node> receivedHelloFrom) {
+        this.receivedHelloFrom = receivedHelloFrom;
     }
 }
