@@ -15,7 +15,8 @@ public class Packet implements Serializable {
     private String sourceNode;
     private long currentTime;
     private ArrayList<Node> biDirectionalLinks;
-    private ArrayList<Node> receivedHelloFrom;
+    private ArrayList<Integer> receivedHelloFrom;
+    private Boolean MPR;
     /**
      * Constructor to be used to make a packet.
      * @param sequenceNumber - a number to identify the packet. Increased each time a packet is created.
@@ -39,6 +40,7 @@ public class Packet implements Serializable {
         this.currentTime = currentTime;
         this.packetType = packetType;
         this.portNumber = portNumber;
+
         idTo = 0;
     }
     /**
@@ -67,16 +69,18 @@ public class Packet implements Serializable {
         this.packetType = packetType;
         this.portNumber = portNumber;
         this.idTo = idTo;
+
     }
     /**
      * The HELLO packet used to set up the MPRs
      * @param biDirectionalLinks - list of addresses of the neighbors which there exists a bi-directional link
      * @param receivedHelloFrom - the list of addresses of the neighbors which are heard by this node (a HELLO has been received)
      */
-    public Packet(ArrayList<Node> biDirectionalLinks, ArrayList<Node> receivedHelloFrom) {
+    public Packet(int id, ArrayList<Node> biDirectionalLinks, ArrayList<Integer> receivedHelloFrom) {
         this.biDirectionalLinks = biDirectionalLinks;
         this.receivedHelloFrom = receivedHelloFrom;
         packetType = 0;
+        this.id = id;
     }
     /**
      * Constructor that sets the current packet to a packet already created
@@ -250,20 +254,46 @@ public class Packet implements Serializable {
     public void setIdTo(int idTo) {
         this.idTo = idTo;
     }
-
+    /**
+     * Returns a list of bidirectional links
+     * @return - ArrayList of biDirectionalLinks
+     */
     public ArrayList<Node> getBiDirectionalLinks() {
         return biDirectionalLinks;
     }
-
-    public ArrayList<Node> getReceivedHelloFrom() {
+    /**
+     * Returns a list of nodes that this node has received a hello from
+     * @return - ArrayList of nodes that this node has received a hello from
+     */
+    public ArrayList<Integer> getReceivedHelloFrom() {
         return receivedHelloFrom;
     }
-
+    /**
+     * Sets a new value for the bidirectional links
+     * @param biDirectionalLinks - the new list of bidirectional links
+     */
     public void setBiDirectionalLinks(ArrayList<Node> biDirectionalLinks) {
         this.biDirectionalLinks = biDirectionalLinks;
     }
-
-    public void setReceivedHelloFrom(ArrayList<Node> receivedHelloFrom) {
+    /**
+     * Sets a new value for the receviedhellofrom list
+     * @param receivedHelloFrom - the new list with new values for received hello from
+     */
+    public void setReceivedHelloFrom(ArrayList<Integer> receivedHelloFrom) {
         this.receivedHelloFrom = receivedHelloFrom;
+    }
+    /**
+     * Returns the boolean value for if this node is an MPR
+     * @return
+     */
+    public Boolean getMPR() {
+        return MPR;
+    }
+    /**
+     * Returns the boolean value for if this node is an MPR
+     * @param MPR
+     */
+    public void setMPR(Boolean MPR) {
+        this.MPR = MPR;
     }
 }

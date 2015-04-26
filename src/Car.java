@@ -21,14 +21,15 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private double speed, xCoordinate, yCoordinate;
     private ArrayList<Node> neighbors;
     private ArrayList<Node> biDirectionalLinks;
-    private ArrayList<Node> receivedHelloFrom;
+    private ArrayList<Integer> receivedHelloFrom;
     private double length = 5.0;
     private double width = 3.0;
     private CacheTable cacheTable;
     private ExecutorService myExecutor;
+    private HelloTable helloTable;
     private int sequenceNumber, helloSequenceNum, packetsLost, packetsSent;
 
-    private boolean ifInRoadTrain;
+    private boolean ifInRoadTrain, MPR;
     int receivePrintCounter = 0;
     //private PacketAcknowledgement packetAck;
 
@@ -81,14 +82,16 @@ public class Car implements Vehicle, PacketAcknowledgement {
         this.xCoordinate = nodeIn.getxCoordinate();
         this.hostname = nodeIn.getHostname();
         cacheTable = new CacheTable();
+        helloTable = new HelloTable();
         this.sequenceNumber = 0;
         this.helloSequenceNum = 0;
+        this.MPR = false;
         packetsSent = 0;
         packetsLost = 0;
         this.speed = 30.0;
         this.ifInRoadTrain = false;
         this.biDirectionalLinks = new ArrayList<Node>();
-        this.receivedHelloFrom = new ArrayList<Node>();
+        this.receivedHelloFrom = new ArrayList<Integer>();
         myExecutor = Executors.newFixedThreadPool(50);
         this.neighbors = nodeIn.getLinks();
         ServerThread serverThread = new ServerThread(getPortNumber(), this);
@@ -96,16 +99,19 @@ public class Car implements Vehicle, PacketAcknowledgement {
         PacketsThread packetsThread = new PacketsThread();
         UpdateLocation updateThread = new UpdateLocation();
         AttemptRoadTrainThread roadTrainThread = new AttemptRoadTrainThread();
+        HelloPacketBroadcast helloThread = new HelloPacketBroadcast();
         serverThread.setDaemon(true);
         broadcasterThread.setDaemon(true);
         packetsThread.setDaemon(true);
         updateThread.setDaemon(true);
         roadTrainThread.setDaemon(true);
+        helloThread.setDaemon(true);
         serverThread.start();
         broadcasterThread.start();
         packetsThread.start();
         updateThread.start();
         roadTrainThread.start();
+        helloThread.start();
     }
     @Override
     public void setxCoordinate(double xCoordinate) {
@@ -273,6 +279,13 @@ public class Car implements Vehicle, PacketAcknowledgement {
         return helloSequenceNum;
     }
 
+    /**
+     * Refactored into a function for readability and better functionality. Takes in a packet and updates the coordinates
+     * Only prints out every 100 packets received
+     * @param packetIn - the packet being processed
+     * @param sequenceNumberIn - current sequence number
+     * @param sourceNodeIDIn - the id of the source node from the packet
+     */
     public void processPacket(Packet packetIn, int sequenceNumberIn, int sourceNodeIDIn) {
 
         int nodeID = this.getMyID();
@@ -306,30 +319,19 @@ public class Car implements Vehicle, PacketAcknowledgement {
             } else if (cacheSequenceNum == sequenceNumberIn) {
                 int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeIDIn)));
                 if (Calculations.retransmissionRate(broadcastNum)) {
-                    sendToNeighboringVehicles(packetIn);
+                    sendToNeighboringVehicles(packetIn);//TODO: Need to fix to only forward if MPR
                 }
             }
         }
     }
 
-    public void processHelloPacket() {
-
-
-
-
-    }
-
-    public void setUpMPRs() {
-
-
-
-
-
-
-    }
-
-
-
+    /**
+     * Refactored into a function for readability and better functionality. Takes in a packet and updates the coordinates
+     * Only prints out every 100 packets received. Only called if the packet type is one of a node in the road train
+     * @param packetIn - the packet being processed
+     * @param sequenceNumberIn - current sequence number
+     * @param sourceNodeIDIn - the id of the source node from the packet
+     */
     public void processPacketWRoadtrain(Packet packetIn, int sequenceNumberIn, int sourceNodeIDIn) {
         int nodeID = this.getMyID();
 
@@ -365,15 +367,40 @@ public class Car implements Vehicle, PacketAcknowledgement {
             } else if (cacheSequenceNum == sequenceNumberIn) {
                 int broadcastNum = cacheTable.getNumberOfBroadcasts((Integer.toString(sourceNodeIDIn)));
                 if (Calculations.retransmissionRate(broadcastNum)) {
-                    sendToNeighboringVehicles(packetIn);
+                    sendToNeighboringVehicles(packetIn);//TODO: Need to fix to only forward if MPR
                 }
             }
         }
     }
 
+    /**
+     * Processes the hello packets from the neighbors
+     * @param packetIn - the hello packet
+     */
     public void processHelloPacket(Packet packetIn) {
+        System.out.println("Received Hello Packet");
+        int nodeID = this.getMyID();
+        if (!receivedHelloFrom.contains(packetIn.getId())) {
+            receivedHelloFrom.add(packetIn.getId());
+        }
 
+        for (Node node : neighbors) {
+            if (node.getNodeID() == packetIn.getId() && receivedHelloFrom.contains(packetIn.getId())) {
+                biDirectionalLinks.add(node);
+            }
+        }
 
+        if (helloTable.checkForNode(packetIn.getId())) {
+            helloTable.updateLinks(packetIn.getId(), packetIn.getBiDirectionalLinks());
+            for (Node node : biDirectionalLinks) {
+                if (node.getNodeID() == packetIn.getId()) {
+                    helloTable.updateStatus(node.getNodeID(), 1);
+                }
+            }
+        }
+        else {
+            helloTable.addNewEntryToHelloTable(packetIn.getId(), 0, packetIn.getBiDirectionalLinks());
+        }
     }
 
     /**
@@ -481,12 +508,15 @@ public class Car implements Vehicle, PacketAcknowledgement {
 
         assert myPacket != null;
         int packetType = myPacket.getPacketType();
-
-        int sequenceNum = myPacket.getSequenceNumber();
-        int sourceNodeID = myPacket.getId();
-        int toNodeID = myPacket.getIdTo();
-        if ((packetType == 1) || (packetType == 2)) {
-            processPacket(myPacket, sequenceNum, sourceNodeID);
+        if (packetType == 0) {
+        processHelloPacket(myPacket);
+        }
+        else {
+            int sequenceNum = myPacket.getSequenceNumber();
+            int sourceNodeID = myPacket.getId();
+            int toNodeID = myPacket.getIdTo();
+            if ((packetType == 1) || (packetType == 2)) {
+                processPacket(myPacket, sequenceNum, sourceNodeID);
 //            int nodeID = this.getMyID();
 //            for (Node node : neighbors) {
 //                if (node.getNodeID() == sourceNodeID) {
@@ -520,10 +550,9 @@ public class Car implements Vehicle, PacketAcknowledgement {
 //                    }
 //                }
 //            }
-        }
-        else if (packetType == 4) {
+            } else if (packetType == 4) {
 
-            processPacketWRoadtrain(myPacket, sequenceNum, sourceNodeID);
+                processPacketWRoadtrain(myPacket, sequenceNum, sourceNodeID);
 //            int nodeID = this.getMyID();
 //            for (Node node : neighbors) {
 //                if (node.getNodeID() == sourceNodeID) {
@@ -560,11 +589,9 @@ public class Car implements Vehicle, PacketAcknowledgement {
 //                    }
 //                }
 //            }
-        }
-
-        else if (packetType == 3) {
-            processPacket(myPacket, sequenceNum, sourceNodeID);
-            int nodeID = this.getMyID();
+            } else if (packetType == 3) {
+                processPacket(myPacket, sequenceNum, sourceNodeID);
+                int nodeID = this.getMyID();
 //                for (Node node : neighbors) {
 //                    if (node.getNodeID() == sourceNodeID) {
 //                        node.setxCoordinate(myPacket.getxCoordinate());
@@ -598,10 +625,10 @@ public class Car implements Vehicle, PacketAcknowledgement {
 //                    }
 //                }
                 if (nodeID == toNodeID) {
-                joinRoadTrain();
+                    joinRoadTrain();
                 }
+            }
         }
-
     }
     /**
      * Takes a packet and sends it to each neighbor in the neighboring nodes list. Only sends if the packet is not determined
@@ -726,13 +753,15 @@ public class Car implements Vehicle, PacketAcknowledgement {
     private class HelloPacketBroadcast extends Thread {
         @Override
         public void run() {
-
-
-
-
+             Packet newPacket = new Packet(getMyID(), biDirectionalLinks, receivedHelloFrom);
+             sendToNeighboringVehicles(newPacket);
+            try {
+                sleep(10);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
         }
-
-
     }
 }

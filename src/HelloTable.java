@@ -5,10 +5,10 @@ import java.util.Hashtable;
  * Created by prewittjm on 4/25/15.
  */
 public class HelloTable {
-    private Hashtable<Node, LinkInfo> helloTable;
+    private Hashtable<Integer, LinkInfo> helloTable;
 
     public HelloTable() {
-        helloTable = new Hashtable<Node, LinkInfo>();
+        helloTable = new Hashtable<Integer, LinkInfo>();
     }
 
     /**
@@ -18,7 +18,7 @@ public class HelloTable {
      * @param links - the links for the node
      * @return - true if the node can be entered into the hash table, false if the
      */
-    public boolean addNewEntryToHelloTable(Node newNode, int status, ArrayList<Node> links) {
+    public boolean addNewEntryToHelloTable(Integer newNode, int status, ArrayList<Node> links) {
         if (!checkForNode(newNode)) {
             helloTable.put(newNode, new LinkInfo(status, links));
             return true;
@@ -34,7 +34,7 @@ public class HelloTable {
      * @param links - the new links
      * @return - true if the lists were added to the node, false if not
     */
-    public boolean updateLinks(Node newNode, ArrayList<Node> links) {
+    public boolean updateLinks(Integer newNode, ArrayList<Node> links) {
         LinkInfo linkInfo = helloTable.get(newNode);
         if (linkInfo == null) {
             return false;
@@ -53,7 +53,7 @@ public class HelloTable {
      * @param status - the new status of the node
      * @return - true if the status can be updated
      */
-    public boolean updateStatus(Node newNode, int status) {
+    public boolean updateStatus(Integer newNode, int status) {
         LinkInfo linkInfo = helloTable.get(newNode);
         if (linkInfo == null) {
             return false;
@@ -73,7 +73,7 @@ public class HelloTable {
      * @param newNode - the node whose status needs to be returned
      * @return - the status of the node
      */
-    public int returnStatus(Node newNode) {
+    public int returnStatus(Integer newNode) {
         LinkInfo linkInfo = helloTable.get(newNode);
         if (linkInfo == null) {
             return -1;
@@ -89,7 +89,7 @@ public class HelloTable {
      * @param newNode - the node
      * @return - ArrayList of nodes that are links to the node
      */
-    public ArrayList<Node> returnLinks(Node newNode) {
+    public ArrayList<Node> returnLinks(Integer newNode) {
         LinkInfo linkInfo = helloTable.get(newNode);
         if (linkInfo == null) {
             return null;
@@ -104,7 +104,7 @@ public class HelloTable {
      * @param node - the node that is being checked if it is in the hash table
      * @return - true if the node is already in the table, false otherwise
      */
-    public boolean checkForNode(Node node) {
+    public boolean checkForNode(Integer node) {
         return helloTable.containsKey(node);
     }
 
